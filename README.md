@@ -8,7 +8,7 @@ Mest megnis verður unnið með gögn í UCSC genome browser en allur code verð
   Nemandi byrjar að skipuleggja documentation aðferða og workflow á github á skipulagðan hátt og kemur sér upp rútínu.
   2. vika
   Mispörunarbreytinga-gögn verða sótt úr ClinVar og byrjað að vinna með eitt gen til að læra og fínpússa leit í höndunum í UCSC genome browser að ísóform sértækum svæðum.
-  Þróuð og prófuð verður high-throughput aðferð fyrir leit að ísóform sértækum svæðum en ef það reynist ónákvæmt eða ógerlegt af einhverjum ástæðum verður einblínt á að gera vinnuna í UCSC genome browser eingöngu til hægðarauka.
+  Þróuð og prófuð verður high-throughput aðferð fyrir leit að ísóform sértækum svæðum en ef það reynist ónákvæmt eða ógerlegt af einhverjum ástæðum verður einblínt á að gera vinnuna í UCSC genome browser eingöngu til að auðvelda ferlið.
   3. vika
   Haldið áfram og vonandi kláruð leit að ísóform sértækum svæðum. Hlutfall mispörunarbreytinga á stærð svæðana reiknuð.
   4. vika
