@@ -1,3 +1,4 @@
+Manually check and identify em genes in ucsc genome browser for unique exons with missense variants.
 Get gnomad data and clinvar data for these genes manually and upload to elja. 
 Get exon data for the isoforms (canonical and non-canonical) for these genes.
 Find out gnomad and variant count in these exons and calculate variant density.
