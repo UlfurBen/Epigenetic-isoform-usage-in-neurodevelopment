@@ -4,3 +4,4 @@ Find out gnomad and variant count in these exons and calculate variant density.
 Use wilcow paired statistical test for the output from both gnomad and clinvar datasets and interpret.
 Find functional domains for exons of interest.
 Use isoformswitchanalyzr with help and guidance from Katrín Möller to find neuronal development usage of these exons.
+Biomart used to identify mouse orthologues isoforms for human isoforms.
