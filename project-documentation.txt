@@ -26,5 +26,7 @@ Top exons with higher ClinVar variant density than gnomAD:
   variant_density.gnomad density_diff
 1             0.22500000   0.10000000
 2             0.03404255   0.01702128
+
+these results used to filter isoform expression code and plot the expression in 3 days of these mouse transcripts that are orthologues to human transcripts.
 3             0.01298701   0.01298701
 ```
