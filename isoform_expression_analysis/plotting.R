@@ -22,20 +22,19 @@ plot_data <- isoform_subset %>%
 # Ensure Days are ordered correctly
 plot_data$Day <- factor(plot_data$Day, levels = c("Day3", "Day6", "Day12"))
 
-# Create the bar plot for each isoform
-for (isoform in isoforms_of_interest) {
-  p <- ggplot(plot_data %>% filter(isoform_id == isoform), aes(x = Day, y = Isoform_Fraction, fill = Day)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    labs(title = paste("Isoform Usage for", isoform),
-         x = "Day",
-         y = "Isoform Fraction (IF)") +
-    theme_minimal() +
-    scale_fill_manual(values = c("Day3" = "#E69F00", "Day6" = "#56B4E9", "Day12" = "#009E73"))
-  
-  # Save the plot as a PDF
-  ggsave(filename = paste0("isoform_usage_", isoform, ".pdf"), plot = p, width = 8, height = 6)
-}
+# Create a multi-panel bar plot for all isoforms
+p <- ggplot(plot_data, aes(x = Day, y = Isoform_Fraction, fill = Day)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Isoform Usage Across Conditions",
+       x = "Day",
+       y = "Isoform Fraction (IF)") +
+  theme_minimal() +
+  scale_fill_manual(values = c("Day3" = "#E69F00", "Day6" = "#56B4E9", "Day12" = "#009E73")) +
+  facet_wrap(~ isoform_id, ncol = 2, scales = "free_y") +  # Facet by isoform_id
+  theme(strip.text = element_text(size = 12, face = "bold"))
+
+# Save the plot as a PDF
+ggsave(filename = "isoform_usage_multiple_isoforms.pdf", plot = p, width = 10, height = 6)
 
 # Display message
-print("Plots saved for each isoform with all days together.")
-
+print("Multi-panel plot saved for all selected isoforms.")
