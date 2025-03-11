@@ -9,7 +9,7 @@ heilastarfsemi og getur stuðlað að taugasjúkdómum.
 Þar að auki gegna prótein sem taka þátt í stjórnun utangenakerfisins mikilvægu hlutverki í
 sérhæfingu taugastofnfrumna og því eru þau mikilvæg í taugaþroska.
 Gen hafa ísóform og oftast hafa þau nokkrar eftir því hvernig splicing á sér stað.
-Oftast eru skoðaðar aðal ísóformur gena en einnig eru til ekki aðal ísóformur sem hafa exónur sem aðal ísóforman
+Oftast eru skoðaðar aðal ísóformur gena en einnig eru til aðrar ísóformur sem eru ekki aðal og hafa exónur sem aðal ísóforman
 ber eki.
 Áhugavert væri að hafa nákvæmar upplýsingar um hvaða exon á ísóformum gena
 utangenakerfisins bera stærstan hluta mispörunarbreytinga. Sér í lagi hvort þéttni mispörunarbreytinga í sjúklingum
