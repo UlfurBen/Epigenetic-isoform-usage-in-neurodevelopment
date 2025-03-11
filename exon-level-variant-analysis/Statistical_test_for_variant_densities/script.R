@@ -40,6 +40,10 @@ if(nrow(paired_data) > 0) {
     cat("Top exons with higher ClinVar variant density than gnomAD:\n")
     print(dplyr::select(top_exons, gene, ensembl_exon_id, isoform_type, 
                         variant_density.clinvar, variant_density.gnomad, density_diff))
+    
+    # Save the top exons to a separate file
+    write.csv(top_exons, "top_exons_high_clinvar_density.csv", row.names = FALSE)
+    cat("Top exons saved to 'top_exons_high_clinvar_density.csv'.\n")
   } else {
     cat("No paired exons found with higher ClinVar density than gnomAD.\n")
   }
