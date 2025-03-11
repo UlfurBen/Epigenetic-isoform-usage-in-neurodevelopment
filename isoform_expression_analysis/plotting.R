@@ -10,14 +10,10 @@ isoform_data <- read.csv("~/downloads/isoform_usage_results.csv", header = TRUE)
 isoforms_of_interest <- c(
 "ENSMUST00000033770",
 "ENSMUST00000023165",
-"ENSMUST00000033770",
 "ENSMUST00000176030",
 "ENSMUST00000087916",
-"ENSMUST00000087916",
 "ENSMUST00000113573",
-"ENSMUST00000099490",
-"ENSMUST00000113573",
-"ENSMUST00000023165"
+"ENSMUST00000099490"
 )
 
 # Filter data for the selected isoforms
