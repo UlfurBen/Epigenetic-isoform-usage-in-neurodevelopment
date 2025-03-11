@@ -122,13 +122,26 @@ DiffSwitchListAnalyzed <- isoformSwitchTestDEXSeq(
 # 13) Inspect Results ---------------------------------------------------
 extractSwitchSummary(DiffSwitchListAnalyzed)
 
-# 14) (Optional) Filter for isoform of interest or genes ---------------
-iso_of_interest <- "ENSMUST00000023741"  # example
-my_iso <- DiffSwitchListAnalyzed$isoformSwitchAnalysis %>%
-  dplyr::filter(isoform_id == iso_of_interest)
+# 14) (Optional) Filter for multiple isoforms of interest or genes ---------------
+iso_of_interest <- c(
+  "ENSMUST00000033770",
+  "ENSMUST00000023165",
+  "ENSMUST00000176030",
+  "ENSMUST00000087916",
+  "ENSMUST00000113573",
+  "ENSMUST00000099490"
+)
+
+# Filter the results to only include isoforms of interest
+filtered_isoforms <- DiffSwitchListAnalyzed$isoformSwitchAnalysis %>%
+  dplyr::filter(isoform_id %in% iso_of_interest)
+
 # Save results to CSV
-write.csv(DiffSwitchListAnalyzed$isoformSwitchAnalysis, "isoform_usage_results.csv", row.names = FALSE)
-print(my_iso)
+write.csv(filtered_isoforms, "isoform_usage_results.csv", row.names = FALSE)
+
+# Print the filtered results
+print(filtered_isoforms)
+
 
 ###############################################################
 # Done! You have:
