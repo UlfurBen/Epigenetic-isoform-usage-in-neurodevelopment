@@ -37,7 +37,7 @@ if(nrow(paired_data) > 0) {
     # Sort exons by the absolute difference in variant density (largest differences first)
     top_exons <- paired_data %>% arrange(desc(abs_diff)) %>% head(10)
     
-    cat("Top 10 exons with higher ClinVar variant density than gnomAD:\n")
+    cat("Top exons with higher ClinVar variant density than gnomAD:\n")
     print(dplyr::select(top_exons, gene, ensembl_exon_id, isoform_type, 
                         variant_density.clinvar, variant_density.gnomad, density_diff))
   } else {
