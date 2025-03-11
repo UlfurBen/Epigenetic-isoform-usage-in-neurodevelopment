@@ -7,7 +7,18 @@ library(tidyr)
 isoform_data <- read.csv("~/downloads/isoform_usage_results.csv", header = TRUE)
 
 # Define isoforms of interest
-isoforms_of_interest <- c("ENSMUST00000033770", "ENSMUST00000169922")
+isoforms_of_interest <- c(
+"ENSMUST00000033770",
+"ENSMUST00000023165",
+"ENSMUST00000033770",
+"ENSMUST00000176030",
+"ENSMUST00000087916",
+"ENSMUST00000087916",
+"ENSMUST00000113573",
+"ENSMUST00000099490",
+"ENSMUST00000113573",
+"ENSMUST00000023165"
+)
 
 # Filter data for the selected isoforms
 isoform_subset <- isoform_data %>%
@@ -34,7 +45,7 @@ p <- ggplot(plot_data, aes(x = Day, y = Isoform_Fraction, fill = Day)) +
   theme(strip.text = element_text(size = 12, face = "bold"))
 
 # Save the plot as a PDF
-ggsave(filename = "isoform_usage_multiple_isoforms.pdf", plot = p, width = 10, height = 6)
+ggsave(filename = "~/downloads/isoform_usage_multiple_isoforms.pdf", plot = p, width = 10, height = 6)
 
 # Display message
 print("Multi-panel plot saved for all selected isoforms.")
