@@ -124,12 +124,16 @@ extractSwitchSummary(DiffSwitchListAnalyzed)
 
 # 14) (Optional) Filter for multiple isoforms of interest or genes ---------------
 iso_of_interest <- c(
-  "ENSMUST00000033770",
-  "ENSMUST00000023165",
-  "ENSMUST00000176030",
-  "ENSMUST00000087916",
-  "ENSMUST00000113573",
-  "ENSMUST00000099490"
+"ENSMUST00000033770",
+"ENSMUST00000023165",
+"ENSMUST00000033770",
+"ENSMUST00000176030",
+"ENSMUST00000087916",
+"ENSMUST00000087916",
+"ENSMUST00000113573",
+"ENSMUST00000099490",
+"ENSMUST00000113573",
+"ENSMUST00000023165"
 )
 
 # Filter the results to only include isoforms of interest
