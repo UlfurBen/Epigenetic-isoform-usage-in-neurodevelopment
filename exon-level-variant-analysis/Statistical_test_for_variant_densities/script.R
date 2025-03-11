@@ -1,6 +1,5 @@
 # Load required libraries
 library(dplyr)
-library(ggplot2)
 
 # Read in the ClinVar and gnomAD exon variant count/density files
 clinvar <- read.csv("exon_clinvar_variant_counts.csv", stringsAsFactors = FALSE)
@@ -47,18 +46,6 @@ if(nrow(paired_data) > 0) {
   } else {
     cat("No paired exons found with higher ClinVar density than gnomAD.\n")
   }
-  
-  # --- Optional Visualization (commented out) ---
-  # Bland-Altman plot: differences vs. mean density for each paired exon
-  # paired_data <- paired_data %>%
-  #   mutate(mean_density = (variant_density.clinvar + variant_density.gnomad) / 2)
-  # ggplot(paired_data, aes(x = mean_density, y = density_diff)) +
-  #   geom_point() +
-  #   geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
-  #   theme_bw() +
-  #   labs(title = "Bland-Altman Plot of Variant Density",
-  #        x = "Mean Variant Density (ClinVar & gnomAD)",
-  #        y = "Density Difference (ClinVar - gnomAD)")
   
 } else {
   cat("No paired exons found. Falling back to unpaired tests.\n")
