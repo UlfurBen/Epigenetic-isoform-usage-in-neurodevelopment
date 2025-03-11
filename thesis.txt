@@ -18,8 +18,31 @@ aðal ísóforman beri þennan mun á þéttni mispörunarbreytinga.
 Einnig væri áhugavert að skoða hvenær ísóform utangenakerfisins eru tjáð á taugaþroska og hvort
 einhver þeirra séu tjáð eingöngu á vissum hluta taugaþroska. Í kjölfarið væri áhugavert að spyrja sig
 hvort einhver þessara ísóforma sem hafa sérhæfða tjáningu á aðeins vissum tíma taugaþroska innihaldi
-hærri þéttni sjúklings mispörunarbreytinga heldur en heilbrigðra mispörunabreytinga.
+hærri þéttni sjúkdóms mispörunarbreytinga heldur en heilbrigðra mispörunarbreytinga.
 
+
+Aðferðir:
+Allan kóða má finna á github https://github.com/UlfurBen/Epigenetic-isoform-usage-in-neurodevelopment/tree/main.
+Exónur fyrir gen voru fengnar frá Ensembl dataset hsapiens_gene_ensembl með R kóða í gegnum BioMart.
+Filterað var fyrir exónum sem finnast bara á einni ísóformu.
+ClinVar stökkbreytingum voru fengnar með því að filtera clinvar.vcf skrá sem var fengin hjá ftp síðu ClinVar:
+https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/.
+Fjöldi sjúkdómsvaldandi ClinVar mispörunarbreytinga og þéttni þeirra á ísóform sértækum exónum var reiknað með skrám fyrri skrefa og
+notkun dplyr R pakkans.
+GnomAD stökkbreytingar voru fengnar frá gnomad_r3 dataset með hjálp GnomAD api.
+Fjöldi GnomAD mispörunarbreytinga og þéttni þeirra á ísóform sértækum exónum var reiknað með skrám fyrri skrefa og
+notkun dplyr R pakkans.
+Athugað var hvort væri tölfræðilega marktækur munur á meiri þéttni ClinVar sjúkdómsvaldandi mispörunarbreytinga
+heldur en GnomAD mispörunarbreytinga á ísóform sértækum exónum með Wilcox pöruðu T-prófi.
+Fyrir 10 exónin með marktækasta muninn voru skoðuð tjáning þeirra í taugaþroska.
+Notast var við gögn úr músalíkani sem Katrín Möller meðleiðbeinandi nema hafði útbúið.
+Líkanið inniheldur gögn úr þremur tilraunum fyrir hvern dag: 3, 6 og 12 daga í taugaþroska.
+Notast var við orthologue ENSMUST ísóform id fyrir þau ísóform exóna sem fengust úr fyrra skrefi en þau fundust
+með Ensembl BioMart.
+IsoformSwitchAnalyzeR R pakkinn var notaður til að keyra gögnin fyrir ísóformin sem við höfum áhuga á.
+
+
+Niðurstöður:
 
 
 
