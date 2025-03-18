@@ -8,7 +8,7 @@ V = 24971, p-value < 2.2e-16
 alternative hypothesis: true location shift is not equal to 0
 
 Top exons with higher ClinVar variant density than gnomAD:
-      gene ensembl_exon_id  isoform_type variant_density.clinvar
+      gene ensembl_exon_id  isoform_type variant_density.clinvar 
 1    MECP2 ENSE00001696145 non_canonical              0.30000000
 2   CREBBP ENSE00003796737 non_canonical              0.13793103
 3    MECP2 ENSE00001864109 non_canonical              0.21546961
@@ -19,13 +19,13 @@ Top exons with higher ClinVar variant density than gnomAD:
 8     NSD1 ENSE00003923942 non_canonical              0.08994709
 9     ATRX ENSE00003757706 non_canonical              0.08695652
 10  CREBBP ENSE00003510976 non_canonical              0.09090909
-   variant_density.gnomad density_diff
-1             0.050000000   0.25000000
-2             0.017241379   0.12068966
-3             0.116022099   0.09944751
-4             0.008928571   0.09821429
-5             0.012987013   0.07792208
-6             0.012987013   0.07792208
+   variant_density.gnomad density_diff human_transcript_ids mouse_transcript_ids 
+1             0.050000000   0.25000000 ENST00000369957
+2             0.017241379   0.12068966 ENST00000637492
+3             0.116022099   0.09944751 ENST00000486506
+4             0.008928571   0.09821429 ENST00000635030
+5             0.012987013   0.07792208 ENST00000649181
+6             0.012987013   0.07792208 
 7             0.021276596   0.06382979
 8             0.026455026   0.06349206
 9             0.026086957   0.06086957
