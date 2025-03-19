@@ -4,10 +4,10 @@
 library(biomaRt)
 library(dplyr)
 
-# Connect to Ensembl BioMart using the "useast" mirror
+# Connect to Ensembl BioMart using the "www" mirror
 ensembl_mart <- useEnsembl(biomart = "ensembl", 
                            dataset = "hsapiens_gene_ensembl", 
-                           mirror = "useast")
+                           mirror = "www")
 
 # List attributes containing "external_gene_name" for verification
 # all_attrs <- listAttributes(ensembl_mart)
