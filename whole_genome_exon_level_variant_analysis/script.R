@@ -174,9 +174,6 @@ exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors =
 exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
-# Define target genes (updated list)
-target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
-
 # ---- 2. Process ClinVar Variant Files for Each Gene ----
 # Variant files are assumed to be named "clinvar_result_[GENE].csv" and contain:
 #   - Chromosome column: "CHROM"
@@ -392,9 +389,6 @@ exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors =
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
-
-# Define target genes
-target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
 
 # ---- 2. Process gnomAD Variant Files for Each Gene ----
 # Variant files are assumed to be named "gnomAD_[GENE].csv" and contain:
