@@ -17,7 +17,9 @@ ensembl_mart <- useEnsembl(biomart = "ensembl",
 # Define the list of target genes (using their external gene names)
 # gene_symbols.csv was created by downloading all gene symbols from https://www.genenames.org/download/custom/?utm_source=chatgpt.com
 # and then using R to save first column values to csv file with quotes around each gene symbol.
-target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
+target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
+  pivot_longer(cols = everything(), values_to = "gene") %>%
+  pull(gene)
 
 # Retrieve Ensembl Gene IDs for target genes using external_gene_name
 gene_info <- getBM(
@@ -137,7 +139,7 @@ extract_clinvar_missense <- function(vcf_file, gene) {
 
 # Define input VCF file and gene list
 vcf_file <- "clinvar.vcf"
-genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
+genes <- target_genes
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
