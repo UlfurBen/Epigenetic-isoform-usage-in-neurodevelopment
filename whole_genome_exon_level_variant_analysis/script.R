@@ -150,6 +150,17 @@ gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, 
 
 
 
+
+
+
+
+
+
+
+
+
+                       
+
 # Load required libraries
 library(dplyr)
 library(readr)  # For read_csv/read_delim
@@ -262,6 +273,22 @@ if(nrow(final_results) > 0) {
   cat("No exons with Pathogenic or Likely Pathogenic variants were found.\n")
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                       
 library(httr)
 library(jsonlite)
 library(dplyr)
@@ -339,6 +366,19 @@ missense_variants_df <- bind_rows(missense_variants_list)
 # print(missense_variants_df)
 
 
+
+
+
+
+
+
+
+
+                       
+
+
+
+                       
 # Load required libraries
 library(dplyr)
 library(readr)  # For read_csv
@@ -441,6 +481,20 @@ if (nrow(final_results) > 0) {
   cat("No exons with variants were found in the gnomAD files.\n")
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+                       
 
 # Load required libraries
 library(dplyr)
