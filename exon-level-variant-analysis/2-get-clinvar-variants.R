@@ -22,6 +22,10 @@ extract_clinvar_missense <- function(vcf_file, gene) {
   gene_variants <- gene_variants %>%
     mutate(CLNSIG = str_extract(INFO, "CLNSIG=[^;]+")) %>%
     mutate(CLNSIG = str_replace(CLNSIG, "CLNSIG=", ""))  # Remove "CLNSIG=" prefix
+
+    # Filter for pathogenic and likely pathogenic variants
+  gene_variants <- gene_variants %>%
+    dplyr::filter(str_detect(CLNSIG, "Pathogenic|Likely_pathogenic"))
   
   # Select relevant columns and rename them
   gene_variants <- gene_variants %>%
