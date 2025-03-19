@@ -1,4 +1,4 @@
-# When running script again remove all .csv file with `rm .csv`
+# When running script again and again to remove all .csv files run rm .csv
 
 # Load required libraries
 library(biomaRt)
