@@ -15,8 +15,7 @@ ensembl_mart <- useEnsembl(biomart = "ensembl",
 # print(gene_attrs)
 
 # Define the list of target genes (using their external gene names)
-target_genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", "CHD2", "EHMT1", 
-                  "EP400", "KAT6A", "KDM4A", "MBD1", "MECP2", "PHF8", "SETD5", "TAF1")
+target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
 
 # Retrieve Ensembl Gene IDs for target genes using external_gene_name
 gene_info <- getBM(
@@ -136,8 +135,7 @@ extract_clinvar_missense <- function(vcf_file, gene) {
 
 # Define input VCF file and gene list
 vcf_file <- "clinvar.vcf"
-genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", "CHD2", "EHMT1", 
-                  "EP400", "KAT6A", "KDM4A", "MBD1", "MECP2", "PHF8", "SETD5", "TAF1")
+genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
@@ -162,8 +160,7 @@ exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
 # Define target genes (updated list)
-target_genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", "CHD2", "EHMT1", 
-                  "EP400", "KAT6A", "KDM4A", "MBD1", "MECP2", "PHF8", "SETD5", "TAF1")
+target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
 
 # ---- 2. Process ClinVar Variant Files for Each Gene ----
 # Variant files are assumed to be named "clinvar_result_[GENE].csv" and contain:
@@ -353,8 +350,7 @@ exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
 # Define target genes
-target_genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", "CHD2", "EHMT1", 
-                  "EP400", "KAT6A", "KDM4A", "MBD1", "MECP2", "PHF8", "SETD5", "TAF1")
+target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
 
 # ---- 2. Process gnomAD Variant Files for Each Gene ----
 # Variant files are assumed to be named "gnomAD_[GENE].csv" and contain:
