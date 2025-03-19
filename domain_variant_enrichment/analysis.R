@@ -142,22 +142,27 @@ retrieve_and_save_mecp2_data <- function(
 ) {
   # ✅ Parse InterPro TSV instead of retrieving Pfam data
   domain_data <- get_mecp2_domains_from_tsv(domain_tsv)
-  
+
   # Retrieve ClinVar missense variants
   clinvar_data <- extract_clinvar_missense_manual(clinvar_vcf) %>%
     mutate(Source = "ClinVar")
-  
+
   # Retrieve gnomAD missense variants
   gnomad_data  <- get_missense_variants_gnomad(gene, dataset = gnomad_dataset) %>%
     mutate(Source = "gnomAD")
-  
+
   # Ensure `POS` column is numeric in both datasets before merging
   clinvar_data <- clinvar_data %>%
     mutate(POS = as.numeric(POS))
-  
+
   gnomad_data <- gnomad_data %>%
     mutate(POS = as.numeric(POS))
-  
+
+  # ✅ Save gnomAD data separately
+  gnomad_file <- "plotB_gnomad_mecp2.csv"
+  write.csv(gnomad_data, gnomad_file, row.names = FALSE)
+  message("✅ gnomAD missense variants saved to: ", gnomad_file)
+
   # Combine ClinVar & gnomAD variants
   all_variants <- dplyr::bind_rows(
     clinvar_data %>% dplyr::select(CHROM, POS, REF, ALT, Source, PROTEIN_POS, CLNSIG),
@@ -166,14 +171,15 @@ retrieve_and_save_mecp2_data <- function(
       dplyr::select(CHROM, POS, REF, ALT, Source, PROTEIN_POS, CLNSIG)
   ) %>%
     arrange(POS)  # Sort by position
-  
-  # Save to CSV
+
+  # Save merged variant data
   variants_file <- "mecp2_variants.csv"
   write.csv(all_variants, variants_file, row.names = FALSE)
   message("✅ MECP2 variant data saved to: ", variants_file)
-  
-  return(list(domains = domain_data, variants = all_variants))
+
+  return(list(domains = domain_data, clinvar_variants = clinvar_data, gnomad_variants = gnomad_data, combined_variants = all_variants))
 }
+
 
 
 
