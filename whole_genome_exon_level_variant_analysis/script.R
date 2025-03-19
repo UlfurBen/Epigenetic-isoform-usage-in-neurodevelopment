@@ -15,6 +15,8 @@ ensembl_mart <- useEnsembl(biomart = "ensembl",
 # print(gene_attrs)
 
 # Define the list of target genes (using their external gene names)
+# gene_symbols.csv was created by downloading all gene symbols from https://www.genenames.org/download/custom/?utm_source=chatgpt.com
+# and then using R to save first column values to csv file with quotes around each gene symbol.
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE) %>% pull(1)
 
 # Retrieve Ensembl Gene IDs for target genes using external_gene_name
