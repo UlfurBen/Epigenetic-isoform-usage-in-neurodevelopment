@@ -21,8 +21,8 @@ plotA <- ggplot() +
   geom_rect(
     data = mecp2_domains,
     aes(
-      xmin = start_aa,
-      xmax = end_aa,
+      xmin = Start,
+      xmax = End,
       ymin = 0,
       ymax = 1,   # a simple height for the domain bars
       fill = domain_name
@@ -53,8 +53,8 @@ plotB <- ggplot() +
   geom_rect(
     data = mecp2_domains,
     aes(
-      xmin = start_aa,
-      xmax = end_aa,
+      xmin = Start,
+      xmax = End,
       ymin = 0,
       ymax = 1,
       fill = domain_name
