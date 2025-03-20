@@ -4,40 +4,37 @@
 library(ggplot2)
 library(dplyr)
 library(readr)
+library(stringr)
 
 # 1) READ CSV FILES
 mecp2_domains      <- read.csv("mecp2_domains.csv", stringsAsFactors = FALSE)
 clinvar_for_plot   <- read.csv("plotA_clinvar_mecp2.csv", stringsAsFactors = FALSE)
 gnomad_for_plot    <- read.csv("plotB_gnomad_mecp2.csv", stringsAsFactors = FALSE)
 
-# 2) EXAMPLE: PLOT A (ClinVar)
-#    We assume you want an x-axis from 1..~486 (length of MECP2 or so).
-#    We'll draw each domain as a rectangle and place points for each variant
-#    by protein_position. If you do NOT have actual protein coordinates,
-#    you'd need to use another approach or omit the points.
+# ✅ Extract protein positions from `hgvsp` in gnomAD data
+gnomad_for_plot <- gnomad_for_plot %>%
+  mutate(PROTEIN_POS = as.numeric(str_extract(hgvsp, "[0-9]+")))
 
+# 2) EXAMPLE: PLOT A (ClinVar)
 plotA <- ggplot() +
-  # Draw domain rectangles (each row in mecp2_domains)
   geom_rect(
     data = mecp2_domains,
     aes(
       xmin = Start,
       xmax = End,
       ymin = 0,
-      ymax = 1,   # a simple height for the domain bars
-      fill = Name
+      ymax = 1,
+      fill = Name  
     ),
-    alpha = 0.5,  # So they do not fully cover each other if they overlap
+    alpha = 0.5,  
     color = "black"
   ) +
-  # Plot each ClinVar variant as a point on top
   geom_point(
     data = clinvar_for_plot,
     aes(
-      x = protein_position,   # numeric position along x-axis
-      y = 0.5                 # put them in the middle of the domain bar
+      x = PROTEIN_POS,   
+      y = 0.5
     ),
-    # color, shape, etc. can be adjusted as you wish
     size = 2
   ) +
   scale_x_continuous("Protein position (amino acid)") +
@@ -65,7 +62,7 @@ plotB <- ggplot() +
   geom_point(
     data = gnomad_for_plot,
     aes(
-      x = protein_position,
+      x = PROTEIN_POS,  
       y = 0.5
     ),
     size = 2
