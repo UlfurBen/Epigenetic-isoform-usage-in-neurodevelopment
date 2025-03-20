@@ -41,22 +41,3 @@ með Ensembl BioMart.
 IsoformSwitchAnalyzeR R pakkinn var notaður til að keyra gögnin frá músatilraun fyrir ísóformin sem við höfum áhuga á.
 
 Niðurstöður:
-
-
-
-Slíkar breytingar geta haft mikil áhrif á frumustarfsemi og sjúkdóma. 
-Stökkbreytingar í genum sem taka þátt í utangenaerfðakerfinu geta leitt til margvíslegra sjúkdóma, einkum þróunarsjúkdóma taugakerfisins. 
-Rannsóknir hafa leitt í ljós að ísóform sértækar stökkbreytingar geta gegnt lykilhlutverki í þróun slíkra sjúkdóma.
-
-Taugathroski er flókið ferli sem byggir á nákvæmri stjórn tjáningar í mismunandi þróunarstigum. 
-Rannsóknir hafa sýnt að ísóform gena í utangenaerfðakerfinu geta haft mismunandi virkni eftir því á hvaða stigi taugaþróunar þau eru tjáð. 
-Slíkar breytingar geta leitt til sjúkdóma ef rétt tjáningarmynstur er ekki tryggt.
-
-Markmið þessarar rannsóknar er að kanna hvort mismunandi ísóform af genum sem tilheyra utangenaerfðakerfinu hafi mismunandi tjáningarmynstur við taugaþróun og hvort þá sérstaða îsóforma tengist sjúkdómum sem eiga rætur að rekja til utangenaerfða. 
-Einnig verður athugað hvort ákveðin ísóform innihaldi hærra hlutfall mispörunarbreytinga samanborið við önnur, sem gæti gefið til kynna sérstoðu þessara îsóforma í meinalíffræðilegum samhengi.
-
-Með því að nota gagnasöfn eins og ClinVar og gnomAD er hægt að skoða dreifingu mispörunarbreytinga í ólíkum îsóformum og meta hvort ákveðin îsóform innihaldi fleiri sjúkdómstengdar stökkbreytingar. 
-Auk þess munu Nanopore RNA raðgreiningargögn vera notuð til að meta hvort ákveðin îsóform eru tjáð á sérstökum þroskastigum taugakerfisins.
-
-Með þessari rannsókn vonumst við til að auka skilning á hlutverki mismunandi îsóforma utangenaerfðakerfisins í taugaþróun og hvaða îsóform gætu verið mikilvæg við sjúkdómsgreiningu og meðferð taugakerfissjúkdóma sem tengjast utangenaerfðum.
-
