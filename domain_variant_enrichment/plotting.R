@@ -25,7 +25,7 @@ plotA <- ggplot() +
       xmax = End,
       ymin = 0,
       ymax = 1,   # a simple height for the domain bars
-      fill = domain_name
+      fill = Name
     ),
     alpha = 0.5,  # So they do not fully cover each other if they overlap
     color = "black"
@@ -57,7 +57,7 @@ plotB <- ggplot() +
       xmax = End,
       ymin = 0,
       ymax = 1,
-      fill = domain_name
+      fill = Name
     ),
     alpha = 0.5,
     color = "black"
