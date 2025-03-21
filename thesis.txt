@@ -41,3 +41,5 @@ með Ensembl BioMart.
 IsoformSwitchAnalyzeR R pakkinn var notaður til að keyra gögnin frá músatilraun fyrir ísóformin sem við höfum áhuga á.
 
 Niðurstöður:
+
+The non-canonical exons with the most difference between density of clinvar pathogenic and likely pathogenic missense variants to gnomad missense variants contained clinvar variants labeled with RETT syndrome and Severe neonatal-onset encephalopathy with microcephaly.
