@@ -353,7 +353,7 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   }
 }
 
-genes <- c("BRCA1")
+genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE)
 
 # Fetch missense variants for each gene and save to individual files
 missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
