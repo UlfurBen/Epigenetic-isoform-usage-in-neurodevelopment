@@ -1,4 +1,4 @@
-# When running script again and again to remove all .csv files run rm *.csv
+# Fetch exons from ensembl
 
 # Load required libraries
 library(biomaRt)
@@ -96,6 +96,21 @@ unique_exons <- exons_joined %>%
 write.csv(unique_exons, "all_exons_canonical_and_noncanonical.csv", row.names = FALSE)
 cat("Unique exons (appearing in only one isoform) have been saved to 'all_exons_canonical_and_noncanonical.csv'.\n")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Retrieve ClinVar variants from clinvar vcf file
+
 # Download clinvar vcf file from https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
 # There download clinvar.vcf.gz and gunzip
 
@@ -139,7 +154,7 @@ extract_clinvar_missense <- function(vcf_file, gene) {
 
 # Define input VCF file and gene list
 vcf_file <- "clinvar.vcf"
-genes <- target_genes
+genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
@@ -161,7 +176,7 @@ gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, 
 
 
 
-                       
+# Count clinvar variants in each unique exon                       
 
 # Load required libraries
 library(dplyr)
@@ -169,6 +184,8 @@ library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
 exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+
+target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
 
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
@@ -384,6 +401,8 @@ library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
 exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+
+target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
 
 # Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
 # Convert exon coordinates to numeric
