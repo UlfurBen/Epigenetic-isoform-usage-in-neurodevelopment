@@ -159,6 +159,8 @@ extract_clinvar_missense <- function(vcf_file, gene) {
 # Define input VCF file and gene list
 vcf_file <- "clinvar.vcf"
 genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
+  pivot_longer(cols = everything(), values_to = "gene") %>%
+  pull(gene)
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
@@ -191,6 +193,8 @@ library(readr)  # For read_csv/read_delim
 exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
+  pivot_longer(cols = everything(), values_to = "gene") %>%
+  pull(gene)
 
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
@@ -377,7 +381,9 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   }
 }
 
-genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE)
+genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
+  pivot_longer(cols = everything(), values_to = "gene") %>%
+  pull(gene)
 
 # Fetch missense variants for each gene and save to individual files
 missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
@@ -411,6 +417,8 @@ library(readr)  # For read_csv
 exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
+  pivot_longer(cols = everything(), values_to = "gene") %>%
+  pull(gene)
 
 # Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
 # Convert exon coordinates to numeric
