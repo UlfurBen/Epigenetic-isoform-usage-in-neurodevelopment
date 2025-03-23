@@ -3,6 +3,9 @@
 # Load required libraries
 library(biomaRt)
 library(dplyr)
+library(tidyr)
+library(readr)
+
 
 # Connect to Ensembl BioMart using the "www" mirror
 ensembl_mart <- useEnsembl(biomart = "ensembl", 
@@ -116,6 +119,7 @@ cat("Unique exons (appearing in only one isoform) have been saved to 'all_exons_
 
 library(dplyr)
 library(readr)
+library(tidyr)
 library(stringr)
 
 # Function to extract missense variants for a given gene
@@ -180,6 +184,7 @@ gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, 
 
 # Load required libraries
 library(dplyr)
+library(tidyr)                       
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
@@ -309,6 +314,8 @@ library(httr)
 library(jsonlite)
 library(dplyr)
 library(tidyr)
+library(readr)
+                       
 
 # Function to get missense variants from gnomAD API for a given gene
 get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
@@ -397,6 +404,7 @@ missense_variants_df <- bind_rows(missense_variants_list)
                        
 # Load required libraries
 library(dplyr)
+library(tidyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
@@ -513,6 +521,8 @@ if (nrow(final_results) > 0) {
 
 # Load required libraries
 library(dplyr)
+library(tidyr)
+library(readr)
 
 # Read in the ClinVar and gnomAD exon variant count/density files
 clinvar <- read.csv("exon_clinvar_variant_counts.csv", stringsAsFactors = FALSE)
