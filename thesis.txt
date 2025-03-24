@@ -35,6 +35,7 @@ Líkanið inniheldur gögn úr þremur tilraunum fyrir hvern dag: 3, 6 og 12 dag
 Notast var við orthologue ENSMUST ísóform id fyrir þau human ísóform exón sem fengust úr fyrra skrefi en þau voru fundin með Ensembl BioMart.
 IsoformSwitchAnalyzeR R pakkinn var notaður til að keyra gögnin frá músatilraun fyrir ísóformin sem við höfum áhuga á.
 Taugaþroskatjáning allra gena utangenakerfisins reiknuð og plottuð.
+Í taugaþroskatjáningu var notast við ANOVA Tukey's HSD fyrir hvert ísóform til að bera kennsl á marktækt meiri tjáning á einstökum dögum.
 Exónu mmispörunarbreytingaþéttnikóðinn var keyrður fyrir öll gen erfðakerfisins til að skima fyrir outliers í þéttni clinvar mispörunarbreytinga í isofórm sértækum exónum.
 
 Niðurstöður:
