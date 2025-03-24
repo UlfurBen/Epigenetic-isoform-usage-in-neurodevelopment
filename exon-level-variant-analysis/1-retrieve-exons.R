@@ -88,6 +88,12 @@ unique_exons <- exons_joined %>%
   ) %>%
   dplyr::filter(n_transcripts == 1)  # Keep only exons unique to a single isoform
 
-# Save the filtered exon information to a CSV file
+# Save all unique exons (both canonical and non-canonical)
 write.csv(unique_exons, "all_exons_canonical_and_noncanonical.csv", row.names = FALSE)
-cat("Unique exons (appearing in only one isoform) have been saved to 'all_exons_canonical_and_noncanonical.csv'.\n")
+
+# Save only canonical unique exons
+canonical_exons_only <- unique_exons %>% filter(isoform_type == "canonical")
+write.csv(canonical_exons_only, "canonical_unique_exons.csv", row.names = FALSE)
+
+cat("✔ All unique exons saved to 'all_exons_canonical_and_noncanonical.csv'\n")
+cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
