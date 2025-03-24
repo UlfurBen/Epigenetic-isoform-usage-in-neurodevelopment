@@ -1,0 +1,12 @@
+   isoform_id         gene_name best_day   p_value
+   <chr>              <chr>     <chr>        <dbl>
+ 1 ENSMUST00000092971 Chd3      Day12    0.0000141
+ 2 ENSMUST00000108661 Chd3      Day12    0.0000177
+ 3 ENSMUST00000140327 Dpf3      Day3     0.0000249
+ 4 ENSMUST00000216540 Dnmt1     Day6     0.0000501
+ 5 ENSMUST00000128981 Chd3      Day12    0.0000666
+ 6 ENSMUST00000209474 Chd9      Day3     0.0000727
+ 7 ENSMUST00000114446 Cbx3      Day6     0.0000903
+ 8 ENSMUST00000189562 Fbxl19    Day3     0.000114 
+ 9 ENSMUST00000135909 Chd3      Day12    0.000156 
+10 ENSMUST00000122992 Chd3      Day12    0.000193
