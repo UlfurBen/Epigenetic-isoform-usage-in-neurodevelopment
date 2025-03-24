@@ -98,11 +98,23 @@ long_df <- all_3_6_12 %>%
 
 # 11) Define a function to run ANOVA and TukeyHSD -----------------------
 get_dominant_day <- function(df) {
+  # Coerce day and expression to basic types
+  df <- df %>%
+    mutate(day = as.character(day),
+           expression = as.numeric(expression)) %>%
+    filter(!is.na(expression))
+
   if (length(unique(df$day)) < 2) {
     return(data.frame(best_day = NA, p_value = NA))
   }
-  model <- aov(expression ~ day, data = df)
-  tukey <- TukeyHSD(model)
+
+  # Run ANOVA safely
+  model <- tryCatch(aov(expression ~ day, data = df), error = function(e) return(NULL))
+  if (is.null(model)) return(data.frame(best_day = NA, p_value = NA))
+
+  tukey <- tryCatch(TukeyHSD(model), error = function(e) return(NULL))
+  if (is.null(tukey)) return(data.frame(best_day = NA, p_value = NA))
+
   results <- as.data.frame(tukey$day)
   results$comparison <- rownames(results)
 
@@ -111,11 +123,14 @@ get_dominant_day <- function(df) {
     return(data.frame(best_day = NA, p_value = NA))
   }
 
-  avg_expr <- df %>% group_by(day) %>% summarise(mean_expr = mean(expression))
-  best_day <- avg_expr %>% arrange(desc(mean_expr)) %>% slice(1) %>% pull(day)
+  avg_expr <- df %>% group_by(day) %>%
+    summarise(mean_expr = mean(expression, na.rm = TRUE)) %>%
+    arrange(desc(mean_expr)) %>%
+    slice_head(n = 1)
 
-  return(data.frame(best_day = best_day, p_value = min(sig_results$`p adj`)))
+  return(data.frame(best_day = avg_expr$day, p_value = min(sig_results$`p adj`)))
 }
+
 
 # 12) Apply to each isoform ---------------------------------------------
 anova_results <- long_df %>%
