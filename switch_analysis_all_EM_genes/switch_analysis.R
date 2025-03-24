@@ -73,9 +73,64 @@ write.csv(all_3_6_12, "isoform_expression_levels.csv", row.names = FALSE)
 print("Isoform expression levels saved for plotting.")
 
 ###############################################################
-# Done! You have:
-#  - Filtered isoforms by gene list case insensitively
-#  - Merged and processed expression data with gene names
-#  - Removed rows containing NA values
-#  - Saved expression levels for every isoform of all selected genes
+# ADDITIONAL SECTION:
+# Run ANOVA + Tukey's HSD per isoform to detect significantly 
+# upregulated day (Day3, Day6, or Day12) based on expression
 ###############################################################
+
+library(tidyr)
+library(broom)
+
+# 10) Reshape to long format ---------------------------------------------
+long_df <- all_3_6_12 %>%
+  pivot_longer(cols = -c(isoform_id, gene_name),
+               names_to = "sample",
+               values_to = "expression") %>%
+  mutate(
+    day = case_when(
+      grepl("Day3", sample) ~ "Day3",
+      grepl("Day6", sample) ~ "Day6",
+      grepl("Day12", sample) ~ "Day12",
+      TRUE ~ NA_character_
+    )
+  ) %>%
+  filter(!is.na(day), !is.na(expression))
+
+# 11) Define a function to run ANOVA and TukeyHSD -----------------------
+get_dominant_day <- function(df) {
+  if (length(unique(df$day)) < 2) {
+    return(data.frame(best_day = NA, p_value = NA))
+  }
+  model <- aov(expression ~ day, data = df)
+  tukey <- TukeyHSD(model)
+  results <- as.data.frame(tukey$day)
+  results$comparison <- rownames(results)
+
+  sig_results <- results %>% filter(`p adj` < 0.05)
+  if (nrow(sig_results) == 0) {
+    return(data.frame(best_day = NA, p_value = NA))
+  }
+
+  avg_expr <- df %>% group_by(day) %>% summarise(mean_expr = mean(expression))
+  best_day <- avg_expr %>% arrange(desc(mean_expr)) %>% slice(1) %>% pull(day)
+
+  return(data.frame(best_day = best_day, p_value = min(sig_results$`p adj`)))
+}
+
+# 12) Apply to each isoform ---------------------------------------------
+anova_results <- long_df %>%
+  group_by(isoform_id, gene_name) %>%
+  group_modify(~get_dominant_day(.x)) %>%
+  ungroup()
+
+# 13) Save the results --------------------------------------------------
+write.csv(anova_results, "significant_isoform_upregulation_by_day.csv", row.names = FALSE)
+
+# Print top hits
+top_hits <- anova_results %>%
+  filter(!is.na(best_day)) %>%
+  arrange(p_value) %>%
+  head(10)
+
+print("Top significantly upregulated isoforms:")
+print(top_hits)
