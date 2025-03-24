@@ -29,6 +29,8 @@ Fjöldi GnomAD mispörunarbreytinga og þéttni þeirra á ísóform sértækum 
 notkun dplyr R pakkans.
 Athugað var hvort væri tölfræðilega marktækur munur á meiri þéttni ClinVar sjúkdómsvaldandi mispörunarbreytinga
 heldur en GnomAD mispörunarbreytinga á ísóform sértækum exónum með Wilcox pöruðu T-prófi.
+Kóðann fyrir þennan part má finna á github í folder sem heitir "exon-level-variant-analysis".
+UCSC genome browser var notaður til að skoða öll utangenakerfisgen og hvort einhver exón væru með mikið að clinvar stökkbreytingum. Rúmlega 15 voru fundin og kóðinn keyrður.
 Fyrir 10 exónin með marktækasta muninn var skoðuð tjáning í taugaþroska.
 Notast var við gögn úr músalíkani sem Katrín Möller meðleiðbeinandi nema hafði útbúið.
 Líkanið inniheldur gögn úr þremur tilraunum fyrir hvern dag: 3, 6 og 12 daga í taugaþroska.
@@ -36,7 +38,7 @@ Notast var við orthologue ENSMUST ísóform id fyrir þau human ísóform exón
 IsoformSwitchAnalyzeR R pakkinn var notaður til að keyra gögnin frá músatilraun fyrir ísóformin sem við höfum áhuga á.
 Taugaþroskatjáning allra gena utangenakerfisins reiknuð og plottuð.
 Í taugaþroskatjáningu var notast við ANOVA Tukey's HSD fyrir hvert ísóform til að bera kennsl á marktækt meiri tjáning á einstökum dögum.
-Exónu mmispörunarbreytingaþéttnikóðinn var keyrður fyrir öll gen erfðakerfisins til að skima fyrir outliers í þéttni clinvar mispörunarbreytinga í isofórm sértækum exónum.
+Exon-level-variant-analysis kóðinn var keyrður fyrir öll gen erfðakerfisins til að skima fyrir outliers í hærri þéttni clinvar mispörunarbreytinga í samanburði við gnomad mispörunarbreytingar í isofórm sértækum exónum.
 
 Niðurstöður:
 
