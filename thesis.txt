@@ -42,4 +42,4 @@ Exon-level-variant-analysis kóðinn var keyrður fyrir öll gen erfðakerfisins
 
 Niðurstöður:
 
-The non-canonical exons with the most difference between density of clinvar pathogenic and likely pathogenic missense variants to gnomad missense variants contained clinvar variants labeled with RETT syndrome and Severe neonatal-onset encephalopathy with microcephaly.
+The non-canonical exons in all EM genes with the most difference between density of clinvar pathogenic and likely pathogenic missense variants to gnomad missense variants contained clinvar variants labeled with RETT syndrome and Severe neonatal-onset encephalopathy with microcephaly. Ísóform-sértækar mispörunarbreytingar í genum utangenakerfisins sýna því helst miðtaugakerfis sjúkdóma svipgerðir
