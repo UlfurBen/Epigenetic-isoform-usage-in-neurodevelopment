@@ -16,9 +16,9 @@ einhver þeirra séu tjáð eingöngu á vissum hluta taugaþroska. Í kjölfari
 hvort einhver þessara ísóforma sem hafa sérhæfða tjáningu á aðeins vissum tíma taugaþroska innihaldi
 hærri þéttni sjúkdóms mispörunarbreytinga heldur en heilbrigðra mispörunarbreytinga.
 
-
 Aðferðir:
-Allan kóða má finna á github https://github.com/UlfurBen/Epigenetic-isoform-usage-in-neurodevelopment/tree/main.
+
+Allan kóða má finna á github síðu: https://github.com/UlfurBen/Epigenetic-isoform-usage-in-neurodevelopment/tree/main.
 Exónur fyrir gen voru fengnar frá Ensembl dataset hsapiens_gene_ensembl með R kóða í gegnum BioMart.
 Filterað var fyrir exónum sem finnast bara á einni ísóformu.
 ClinVar stökkbreytingar voru fengnar með því að filtera clinvar.vcf skrá sem var fengin frá ftp síðu ClinVar:
