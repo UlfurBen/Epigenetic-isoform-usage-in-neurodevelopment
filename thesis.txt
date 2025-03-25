@@ -16,6 +16,8 @@ einhver þeirra séu tjáð eingöngu á vissum hluta taugaþroska. Í kjölfari
 hvort einhver þessara ísóforma sem hafa sérhæfða tjáningu á aðeins vissum tíma taugaþroska innihaldi
 hærri þéttni sjúkdóms mispörunarbreytinga heldur en heilbrigðra mispörunarbreytinga.
 
+
+
 Aðferðir:
 
 Allan kóða má finna á github síðu: https://github.com/UlfurBen/Epigenetic-isoform-usage-in-neurodevelopment/tree/main.
