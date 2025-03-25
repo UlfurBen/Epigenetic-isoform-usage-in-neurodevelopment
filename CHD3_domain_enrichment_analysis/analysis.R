@@ -138,7 +138,7 @@ retrieve_and_save_chd3_data <- function(
     gene          = "CHD3",
     clinvar_vcf   = "clinvar.vcf",
     gnomad_dataset = "gnomad_r3",
-    domain_tsv    = "entry-matching-P51608-chd3.tsv"
+    domain_tsv    = "entry-matching-Q12873-chd3.tsv"
 ) {
   # ✅ Parse InterPro TSV instead of retrieving Pfam data
   domain_data <- get_chd3_domains_from_tsv(domain_tsv)
@@ -184,7 +184,7 @@ results_list <- retrieve_and_save_chd3_data(
   gene         = "chd3", 
   clinvar_vcf  = "clinvar.vcf",
   gnomad_dataset = "gnomad_r3",
-  domain_tsv    = "entry-matching-P51608-chd3.tsv"
+  domain_tsv    = "entry-matching-Q12873-chd3.tsv"
 )
 
 # Expected outputs:
