@@ -33,7 +33,7 @@ get_chd3_domains_from_tsv <- function(file_path = "entry-matching-Q12873-chd3.ts
 }
 
 # ✅ GET DOMAIN DATA
-chd3_domains <- get_chd3_domains_from_tsv("entry-matching-P51608-chd3.tsv")
+chd3_domains <- get_chd3_domains_from_tsv("entry-matching-Q12873-chd3.tsv")
 
 # ✅ READ CLINVAR & GNOMAD VARIANT DATA
 clinvar_for_plot   <- read_csv("plotA_clinvar_chd3.csv", show_col_types = FALSE)
