@@ -41,6 +41,7 @@ IsoformSwitchAnalyzeR R pakkinn var notaður til að keyra gögnin frá músatil
 Taugaþroskatjáning allra gena utangenakerfisins reiknuð og plottuð.
 Í taugaþroskatjáningu var notast við ANOVA Tukey's HSD fyrir hvert ísóform til að bera kennsl á marktækt meiri tjáning á einstökum dögum.
 Exon-level-variant-analysis kóðinn var keyrður fyrir öll gen erfðakerfisins til að skima fyrir outliers í hærri þéttni clinvar mispörunarbreytinga í samanburði við gnomad mispörunarbreytingar í isofórm sértækum exónum.
+Domain_variant_enrichment_analysis kóði var skrifaður þar sem protein position fyrir gnomad og clinvar stökkbreytingar var fundin og domain gögn voru fengin frá interpro. Hér var aðeins skoðað CHD3 þar sem það var með marktækasta muninn á ísóform tjáningu milli daga í taugaþroskagögnum.
 
 Niðurstöður:
 
