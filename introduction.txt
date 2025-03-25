@@ -1,0 +1,24 @@
+Utangenakerfið gegnir lykilhlutverki í taugaþroska með því að stjórna genatjáningu án breytinga á sjálfum DNA niturbösum. Þessi stjórnun utangenakerfisins er nauðsynleg fyrir ferla eins og fjölgun og sérhæfingu taugastofnfrumna, myndun taugamóta og taugaviðgerð. DNA metýlering er almennt talin stöðug en nýlegar rannsóknir hafa sýnt fram á að hún er í raun kvik og getur breyst sem svar við umhverfisáhrifum og hefur þannig áhrif á heilastarfsemi og getur stuðlað að taugasjúkdómum (Loke et al., 2015; Frontiers in Neuroscience, 2021).
+Þar að auki gegna prótein sem taka þátt í stjórnun utangenakerfisins mikilvægu hlutverki í sérhæfingu taugastofnfrumna og því eru þau mikilvæg í taugaþroska. Nýlegar rannsóknir hafa leitt í ljós að þessi prótein geta haft mismunandi virkni eftir því hvaða ísóform þeirra eru tjáð í frumum, sem hefur bein áhrif á myndun og sérhæfingu taugafrumna (Weyn-Vanhentenryck et al., 2021).
+Gen hafa oft mörg ísóform sem verða til við valkvæða splæsingu. Oft eru eingöngu skoðuð aðal ísóform (canonical), en til eru non-canonical ísóform sem bera sérstakar exónur sem ekki finnast í aðal ísóformunum. Þessi non-canonical ísóform geta haft sérstakt hlutverk og tjást stundum á sértækum tímum taugaþroska (Gonzalez-Lozano et al., 2021).
+Áhugavert væri að hafa nákvæmar upplýsingar um hvaða exon á ísóformum gena utangenakerfisins bera stærstan hluta mispörunarbreytinga. Sér í lagi hvort þéttni mispörunarbreytinga í sjúklingum sé meiri en þéttni mispörunarbreytingar í heilbrigðum einstaklingum. Slíkar upplýsingar má fá úr gagnagrunnum á borð við ClinVar og gnomAD, sem innihalda upplýsingar um erfðabreytileika í sjúkdómstilfellum og meðal heilbrigðra einstaklinga (Landrum et al., 2018).
+Rannsóknir hafa einnig sýnt að breytingar í ísóformatjáningu geta haft áhrif á þróun taugaþroskaraskana, eins og einhverfu, og að þessi áhrif eru oft tengd non-canonical ísóformum sem eru sérstaklega tjáð snemma í taugaþroska (Gandal et al., 2021; Developmental Cell, 2023).
+Enn frekar er áhugavert að skoða hvort ísóformur sem eru ekki aðal ísóformin beri þennan mun á þéttni mispörunarbreytinga frekar en aðal ísóformin. Þetta gæti bent til að þessi sjaldgæfari ísóform hafi mikilvægt hlutverk í sjúkdómsferlum þrátt fyrir að hafa fengið minni athygli í fyrri rannsóknum.
+Einnig væri áhugavert að skoða hvenær ísóform utangenakerfisins eru tjáð á taugaþroska og hvort einhver þeirra séu tjáð eingöngu á vissum hluta taugaþroska. Í kjölfarið væri áhugavert að spyrja sig hvort einhver þessara ísóforma sem hafa sérhæfða tjáningu á aðeins vissum tíma taugaþroska innihaldi hærri þéttni sjúkdóms mispörunarbreytinga heldur en heilbrigðra mispörunarbreytinga (Li et al., 2022).
+Tilvísanir:
+Loke, Y.J., et al. (2015). The role of epigenetic change in autism spectrum disorders Frontiers in Neuroscience. https://www.frontiersin.org/journals/neurology/articles/10.3389/fneur.2015.00107/full 
+
+
+Gonzalez-Lozano, M.A., et al. (2021). Developmental isoform diversity in the human neocortex. bioRxiv. https://www.biorxiv.org/content/10.1101/2023.03.25.534016v3
+
+
+Weyn-Vanhentenryck, S.M., et al. (2018). Precise temporal regulation of alternative splicing during neural development. Nature communications. https://www.nature.com/articles/s41467-018-04559-0 
+
+
+Landrum, M.J., et al. (2018). ClinVar: improving access to variant interpretations and supporting evidence. Nucleic Acids Research. https://pubmed.ncbi.nlm.nih.gov/29165669/ 
+
+
+Gandal, M.J., et al. (2021). Isoform-level transcriptome-wide association in neuropsychiatric traits. Nature Genetics. https://www.nature.com/articles/s41588-023-01560-2
+
+
+Li, Y.I., et al. (2022). RNA splicing variation links genetic variation to complex traits. Nature Genetics. https://www.nature.com/articles/s41588-022-01154-4 
