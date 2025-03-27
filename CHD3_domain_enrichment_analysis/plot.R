@@ -1,4 +1,4 @@
-# Ensembl VEP was used to get protein position of ClinVar variants
+# Ensembl VEP web interface on https://www.ensembl.org/info/docs/tools/vep/index.html was used to get protein position of ClinVar variants
 
 ###############################################################################
 # FIXED LOLLIPOP PLOTS FOR ClinVar & gnomAD (Domains Below Lollipops)
