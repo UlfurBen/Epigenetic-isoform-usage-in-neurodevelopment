@@ -1,3 +1,5 @@
+# Get unique exons for these genes from list
+
 # Load required libraries
 library(biomaRt)
 library(dplyr)
@@ -144,7 +146,7 @@ cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
 
 
 
-
+# Get clinvar variants for genes from list
 
 # Download clinvar vcf file from https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
 # There download clinvar.vcf.gz and gunzip
@@ -242,7 +244,7 @@ gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, 
 
 
 
-
+# Count clinvar variants in each exons
 
 # Load required libraries
 library(dplyr)
@@ -400,7 +402,7 @@ if(nrow(final_results) > 0) {
 
 
 
-
+# Get Gnomad variants using API
 
 library(httr)
 library(jsonlite)
@@ -515,7 +517,7 @@ missense_variants_df <- bind_rows(missense_variants_list)
 
 
 
-
+# Count gnomad variants in each exon
 
 # Load required libraries
 library(dplyr)
@@ -659,78 +661,66 @@ if (nrow(final_results) > 0) {
 
 
 
+                       
+                       
+# Run fisher test to find statistically significant enrichment in exons
 
-
-
-# Load required libraries
 library(dplyr)
+library(readr)
 
-# Read in the ClinVar and gnomAD exon variant count/density files
-clinvar <- read.csv("exon_clinvar_variant_counts.csv", stringsAsFactors = FALSE)
-gnomad  <- read.csv("exon_gnomad_variant_counts.csv", stringsAsFactors = FALSE)
+# Load variant counts and exon metadata
+clinvar_df <- read_csv("exon_clinvar_variant_counts.csv", show_col_types = FALSE)
+gnomad_df <- read_csv("exon_gnomad_variant_counts.csv", show_col_types = FALSE)
+all_exons <- read_csv("all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
 
-# Add a column to indicate dataset
-clinvar <- clinvar %>% mutate(dataset = "ClinVar")
-gnomad  <- gnomad %>% mutate(dataset = "gnomAD")
+# Merge ClinVar and gnomAD counts on exon ID
+merged_variants <- full_join(clinvar_df, gnomad_df,
+                             by = c("gene", "ensembl_exon_id", "exon_chr", "exon_start", "exon_end", "isoform_type"),
+                             suffix = c("_clinvar", "_gnomad")) %>%
+  mutate(across(c(variant_count_clinvar, variant_count_gnomad), ~replace_na(., 0)))
 
-# --- Attempt to Pair Data ---
-# Merge by common identifiers: ensembl_exon_id, gene, and isoform_type.
-paired_data <- merge(clinvar, gnomad, by = c("ensembl_exon_id", "gene", "isoform_type"),
-                     suffixes = c(".clinvar", ".gnomad"))
+# Get gene-level totals for all exons (per source)
+total_variant_counts <- merged_variants %>%
+  group_by(gene) %>%
+  summarize(
+    total_clinvar_gene = sum(variant_count_clinvar, na.rm = TRUE),
+    total_gnomad_gene = sum(variant_count_gnomad, na.rm = TRUE),
+    .groups = "drop"
+  )
 
-if(nrow(paired_data) > 0) {
-  cat("Paired exons found:", nrow(paired_data), "\n")
-  
-  # Paired test on variant density (if applicable)
-  paired_test <- wilcox.test(paired_data$variant_density.clinvar, 
-                             paired_data$variant_density.gnomad, 
-                             paired = TRUE)
-  cat("Paired Wilcoxon signed-rank test result:\n")
-  print(paired_test)
-  
-  # --- Compute Differences ---
-  # Calculate the density difference for each paired exon and keep only those with
-  # higher ClinVar density than gnomAD (i.e., density_diff > 0).
-  paired_data <- paired_data %>%
-    mutate(density_diff = variant_density.clinvar - variant_density.gnomad,
-           abs_diff = abs(density_diff)) %>%
-    dplyr::filter(density_diff > 0)
-  
-  if(nrow(paired_data) > 0) {
-    # Sort exons by the absolute difference in variant density (largest differences first)
-    top_exons <- paired_data %>% arrange(desc(abs_diff)) %>% head(10)
-    
-    cat("Top exons with higher ClinVar variant density than gnomAD:\n")
-    print(dplyr::select(top_exons, gene, ensembl_exon_id, isoform_type, 
-                        variant_density.clinvar, variant_density.gnomad, density_diff))
-    
-    # Save the top exons to a separate file
-    write.csv(top_exons, "top_exons_high_clinvar_density.csv", row.names = FALSE)
-    cat("Top exons saved to 'top_exons_high_clinvar_density.csv'.\n")
-  } else {
-    cat("No paired exons found with higher ClinVar density than gnomAD.\n")
-  }
-  
-} else {
-  cat("No paired exons found. Falling back to unpaired tests.\n")
-  
-  # --- Unpaired Test Example: Canonical exons ---
-  canon_clinvar <- clinvar %>% dplyr::filter(isoform_type == "canonical") %>% pull(variant_density)
-  canon_gnomad  <- gnomad %>% dplyr::filter(isoform_type == "canonical") %>% pull(variant_density)
-  
-  if(length(canon_clinvar) > 0 && length(canon_gnomad) > 0) {
-    unpaired_test <- wilcox.test(canon_clinvar, canon_gnomad, paired = FALSE)
-    cat("Unpaired Wilcoxon rank-sum test result for canonical exons:\n")
-    print(unpaired_test)
-  } else {
-    cat("Insufficient data for canonical exons for unpaired testing.\n")
-  }
-  
-  # In this fallback, you won't have paired differences per exon.
-}
+# Merge gene-level totals
+merged_variants <- merged_variants %>%
+  left_join(total_variant_counts, by = "gene") %>%
+  mutate(
+    a = variant_count_clinvar,
+    b = total_clinvar_gene - variant_count_clinvar,
+    c = variant_count_gnomad,
+    d = total_gnomad_gene - variant_count_gnomad
+  )
 
-# (Optional) Save the paired data with computed differences for further inspection
-if(nrow(paired_data) > 0) {
-  write.csv(paired_data, "paired_exon_variant_density_comparison.csv", row.names = FALSE)
-  cat("Paired exon data with density differences have been saved to 'paired_exon_variant_density_comparison.csv'.\n")
-}
+# Run Fisher's Exact Test for each exon
+fisher_results <- merged_variants %>%
+  rowwise() %>%
+  mutate(
+    fisher_p = tryCatch({
+      mat <- matrix(c(a, b, c, d), nrow = 2)
+      fisher.test(mat)$p.value
+    }, error = function(e) NA_real_)
+  ) %>%
+  ungroup()
+
+# Add FDR correction
+fisher_results <- fisher_results %>%
+  mutate(fdr = p.adjust(fisher_p, method = "fdr"))
+
+# Optional: Calculate ClinVar-to-gnomAD enrichment ratio
+fisher_results <- fisher_results %>%
+  mutate(
+    clinvar_ratio = a / (a + b + 1e-6),  # add small value to avoid div by 0
+    gnomad_ratio  = c / (c + d + 1e-6),
+    enrichment_ratio = clinvar_ratio / gnomad_ratio
+  )
+
+# Save to CSV
+write_csv(fisher_results, "exon_fisher_enrichment_results.csv")
+cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
