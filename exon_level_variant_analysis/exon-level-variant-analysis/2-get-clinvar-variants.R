@@ -41,7 +41,7 @@ extract_clinvar_missense <- function(vcf_file, gene) {
 
 # Define input VCF file and gene list
 vcf_file <- "clinvar.vcf"
-genes <- c("MECP2")
+genes <- c("A1BG","A1BG-AS1")
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
