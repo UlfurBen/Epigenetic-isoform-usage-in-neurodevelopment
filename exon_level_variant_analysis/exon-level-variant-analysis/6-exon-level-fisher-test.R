@@ -46,22 +46,26 @@ fisher_results <- merged_variants %>%
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
-# Optional: Calculate ClinVar-to-gnomAD enrichment ratio
-fisher_results <- fisher_results %>%
-  mutate(
-    clinvar_ratio = a / (a + b + 1e-6),  # add small value to avoid div by 0
-    gnomad_ratio  = c / (c + d + 1e-6),
-    enrichment_ratio = clinvar_ratio / gnomad_ratio
+# Select only desired columns
+fisher_results_limited <- fisher_results %>%
+  dplyr::select(
+    gene,
+    ensembl_exon_id,
+    isoform_type,
+    variant_count_clinvar = a,
+    variant_count_gnomad = c,
+    fisher_p,
+    fdr
   )
 
-# Save to CSV
-write_csv(fisher_results, "exon_fisher_enrichment_results.csv")
+# Save full results (limited columns)
+write_csv(fisher_results_limited, "exon_fisher_enrichment_results.csv")
 cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
 
-top_hits <- fisher_results %>%
+# Save top hits (FDR < 0.05), sorted by enrichment
+top_hits <- fisher_results_limited %>%
   filter(fdr < 0.05) %>%
-  arrange(desc(enrichment_ratio))
+  arrange(fdr)
 
-write_csv(top_hits, "exon_top_clinvar_enriched.csv")
-cat("✔ Fisher's exact top exon results saved to 'exon_fisher_enrichment_results.csv'\n")
-
+write_csv(top_hits, "fisher_exon_top_clinvar_enriched.csv")
+cat("✔ Fisher's exact top exon results saved to 'exon_top_clinvar_enriched.csv'\n")
