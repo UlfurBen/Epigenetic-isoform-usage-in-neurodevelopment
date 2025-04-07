@@ -27,7 +27,7 @@ clinvar_variants <- clinvar_data %>%
 ###############################################################
 # 2) Load InterPro domain annotation
 ###############################################################
-domains_raw <- read_tsv("entry-matching-P51608.tsv", show_col_types = FALSE)
+domains_raw <- read_tsv("entry-matching-P51608-mecp2.tsv", show_col_types = FALSE)
 
 # Extract start and end positions from Match column
 domain_data <- domains_raw %>%
