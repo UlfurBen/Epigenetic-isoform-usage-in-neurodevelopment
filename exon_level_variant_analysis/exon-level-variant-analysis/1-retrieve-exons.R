@@ -13,9 +13,7 @@ ensembl_mart <- useEnsembl(biomart = "ensembl",
 # print(gene_attrs)
 
 # Define the list of target genes (using their external gene names)
-target_genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", 
-                  "CHD2", "EHMT1", "EP400", "KAT6A", "KDM4A", 
-                  "MBD1", "MECP2", "PHF8", "SETD5", "TAF1")
+target_genes <- c("A1BG","A1BG-AS1","A1CF","A1S9T","A2M","KMT2A")
 
 # Retrieve Ensembl Gene IDs for target genes using external_gene_name
 gene_info <- getBM(
