@@ -11,7 +11,7 @@ exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
 # Define target genes
-target_genes <- c("A1BG","A1BG-AS1","A1CF","A1S9T","A2M","KMT2A")
+target_genes <- c("A1BG","A1BG-AS1")
 
 # ---- 2. Process gnomAD Variant Files for Each Gene ----
 # Variant files are assumed to be named "gnomAD_[GENE].csv" and contain:
