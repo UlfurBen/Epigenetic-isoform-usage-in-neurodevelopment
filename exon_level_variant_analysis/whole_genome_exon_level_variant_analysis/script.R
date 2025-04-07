@@ -437,7 +437,7 @@ exons$exon_end   <- as.numeric(exons$exon_end)
 exon_variant_counts <- list()
 
 for (g in target_genes) {
-  variant_file <- paste0("gnomAD_", g, ".csv")
+  variant_file <- paste0("gnomAD_", g, ".tsv.bgz")
   
   if (!file.exists(variant_file)) {
     message("File not found: ", variant_file, " ... skipping.")
@@ -445,7 +445,7 @@ for (g in target_genes) {
   }
   
   # Read the variant file (assuming CSV format)
-  variants <- read_csv(variant_file, show_col_types = FALSE)
+  variants <- read_tsv(variant_file, show_col_types = FALSE)
   
   # Clean up column names: trim any leading/trailing whitespace
   colnames(variants) <- trimws(colnames(variants))
