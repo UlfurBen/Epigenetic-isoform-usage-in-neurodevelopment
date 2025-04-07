@@ -10,10 +10,10 @@ library(stringr)
 library(tidyr)
 
 # ✅ 1) Load domain data
-mecp2_domains <- read_tsv("mecp2_domain_variant_counts.tsv", show_col_types = FALSE)
+mecp2_domains <- read_tsv("kmt2a_domain_variant_counts.tsv", show_col_types = FALSE)
 
 # ✅ 2) Load ClinVar variant data
-clinvar_raw <- read_tsv("clinvar_result_MECP2.txt", show_col_types = FALSE)
+clinvar_raw <- read_tsv("clinvar_result_KMT2A.txt", show_col_types = FALSE)
 
 # ✅ 3) Extract protein positions
 clinvar_for_plot <- clinvar_raw %>%
@@ -68,9 +68,9 @@ plot_clinvar_mecp2 <- ggplot() +
   
   scale_x_continuous("Amino Acid Position", expand = c(0, 0)) +
   scale_y_continuous("Number of Variants", limits = c(-domain_height, max(clinvar_counts$Count, na.rm = TRUE) + 1)) +
-  ggtitle("ClinVar Missense Variants in MECP2") +
+  ggtitle("ClinVar Missense Variants in KMT2A") +
   custom_theme
 
 # ✅ 8) Save the plot
-ggsave("lollipop_ClinVar_mecp2.png", plot_clinvar_mecp2, width = 10, height = 4, dpi = 300)
-message("✅ ClinVar lollipop plot for MECP2 saved successfully!")
+ggsave("lollipop_ClinVar_kmt2a.png", plot_clinvar_mecp2, width = 10, height = 4, dpi = 300)
+message("✅ ClinVar lollipop plot for KMT2A saved successfully!")
