@@ -440,7 +440,7 @@ missense_variants_df <- bind_rows(missense_variants_list)
 
 
 
-
+# Run Fisher test
 
 # Load required libraries
 library(dplyr)
