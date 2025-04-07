@@ -12,7 +12,7 @@ library(tidyr)
 ###############################################################
 # 1) Load ClinVar file and extract protein positions
 ###############################################################
-clinvar_data <- read_tsv("clinvar_result_MECP2.csv", show_col_types = FALSE)
+clinvar_data <- read_tsv("clinvar_result_MECP2.txt", show_col_types = FALSE)
 
 # Only keep missense variants with valid protein changes
 clinvar_variants <- clinvar_data %>%
