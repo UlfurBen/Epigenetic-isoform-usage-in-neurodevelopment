@@ -63,9 +63,9 @@ write_csv(fisher_results_limited, "exon_fisher_enrichment_results.csv")
 cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
 
 # Save top hits (FDR < 0.05), sorted by enrichment
-top_hits <- fisher_results_limited %>%
-  filter(fdr < 0.05) %>%
-  arrange(fdr)
-
-write_csv(top_hits, "fisher_exon_top_clinvar_enriched.csv")
-cat("✔ Fisher's exact top exon results saved to 'exon_top_clinvar_enriched.csv'\n")
+#top_hits <- fisher_results_limited %>%
+#  filter(fdr < 0.05) %>%
+#  arrange(fdr)
+#
+#write_csv(top_hits, "fisher_exon_top_clinvar_enriched.csv")
+#cat("✔ Fisher's exact top exon results saved to 'exon_top_clinvar_enriched.csv'\n")
