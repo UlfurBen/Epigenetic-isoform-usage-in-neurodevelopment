@@ -11,8 +11,7 @@ exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
 # Define target genes
-target_genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", "CHD2", "EHMT1", 
-                  "EP400", "KAT6A", "KDM4A", "MBD1", "MECP2", "PHF8", "SETD5", "TAF1")
+target_genes <- c("A1BG","A1BG-AS1","A1CF","A1S9T","A2M","KMT2A")
 
 # ---- 2. Process gnomAD Variant Files for Each Gene ----
 # Variant files are assumed to be named "gnomAD_[GENE].csv" and contain:
@@ -26,15 +25,15 @@ target_genes <- c("BAHD1", "BAZ1B", "BRD2", "BRD4", "BRPF1", "CHD2", "EHMT1",
 exon_variant_counts <- list()
 
 for (g in target_genes) {
-  variant_file <- paste0("gnomAD_", g, ".csv")
+  variant_file <- paste0("gnomAD_", g, ".tsv.bgz")
   
   if (!file.exists(variant_file)) {
     message("File not found: ", variant_file, " ... skipping.")
     next
   }
   
-  # Read the variant file (assuming CSV format)
-  variants <- read_csv(variant_file, show_col_types = FALSE)
+  # Read the variant file (assuming tsv format)
+  variants <- read_tsv(variant_file, show_col_types = FALSE)
   
   # Clean up column names: trim any leading/trailing whitespace
   colnames(variants) <- trimws(colnames(variants))
