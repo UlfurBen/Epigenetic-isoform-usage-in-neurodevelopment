@@ -12,7 +12,7 @@ library(tidyr)
 ###############################################################
 # 1) Load ClinVar file and extract protein positions
 ###############################################################
-clinvar_data <- read_tsv("clinvar_result_MECP2.txt", show_col_types = FALSE)
+clinvar_data <- read_tsv("clinvar_result_KMT2A.txt", show_col_types = FALSE)
 
 # Only keep missense variants with valid protein changes
 clinvar_variants <- clinvar_data %>%
@@ -27,7 +27,7 @@ clinvar_variants <- clinvar_data %>%
 ###############################################################
 # 2) Load InterPro domain annotation
 ###############################################################
-domains_raw <- read_tsv("entry-matching-P51608-mecp2.tsv", show_col_types = FALSE)
+domains_raw <- read_tsv("entry-matching-Q03164.tsv", show_col_types = FALSE)
 
 # Extract start and end positions from Match column
 domain_data <- domains_raw %>%
