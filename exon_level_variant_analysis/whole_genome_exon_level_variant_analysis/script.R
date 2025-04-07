@@ -197,7 +197,7 @@ library(tidyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
@@ -225,7 +225,7 @@ for(g in target_genes) {
   }
   
   # Read the variant file
-  variants <- read.csv(variant_file, stringsAsFactors = FALSE, header = TRUE)
+  variants <- read_csv(variant_file, stringsAsFactors = FALSE, header = TRUE)
   
   # Clean up column names: trim any leading/trailing whitespace
   colnames(variants) <- trimws(colnames(variants))
@@ -421,7 +421,7 @@ library(tidyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
@@ -444,7 +444,7 @@ exons$exon_end   <- as.numeric(exons$exon_end)
 exon_variant_counts <- list()
 
 for (g in target_genes) {
-  variant_file <- paste0("gnomAD_", g, ".tsv.bgz")
+  variant_file <- paste0("gnomAD_", g, ".csv")
   
   if (!file.exists(variant_file)) {
     message("File not found: ", variant_file, " ... skipping.")
@@ -620,7 +620,11 @@ library(tidyr)
 merged <- read_csv("exon_fisher_enrichment_results.csv", show_col_types = FALSE)
 
 # Check if needed columns are present
-stopifnot(all(c("gene", "isoform_type", "a", "c") %in% colnames(merged)))
+required_cols <- c("gene", "isoform_type", "a", "c")
+if (!all(required_cols %in% colnames(merged))) {
+  stop("❌ One or more required columns are missing from 'exon_fisher_enrichment_results.csv': ", 
+       paste(setdiff(required_cols, colnames(merged)), collapse = ", "))
+}
 
 # Summarize ClinVar and gnomAD counts by gene and isoform type
 summary_by_gene <- merged %>%
