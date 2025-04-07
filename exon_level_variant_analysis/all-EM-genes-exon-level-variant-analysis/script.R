@@ -146,7 +146,11 @@ cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
 
 
 
+
 # Get clinvar variants for genes from list
+
+# Download clinvar vcf file from https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
+# There download clinvar.vcf.gz and gunzip
 
 # Download clinvar vcf file from https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
 # There download clinvar.vcf.gz and gunzip
@@ -244,7 +248,7 @@ gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, 
 
 
 
-# Count clinvar variants in each exons
+# Count clinvar variants in each exon
 
 # Load required libraries
 library(dplyr)
@@ -258,35 +262,35 @@ exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
 # Define target genes (updated list)
-target_genes <- c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
-                  "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
-                  "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
-                  "CBX1", "CBX2", "CBX3", "CBX4", "CBX5", "CBX6", "CBX7", "CBX8", "CDY1", "CDY2A", "CDYL",
-                  "CDYL2", "CECR2", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5", "CHD6", "CHD7", "CHD8", "CHD9",
-                  "CREBBP", "CXXC1", "CXXC4", "CXXC5", "DIDO1", "DNMT1", "DNMT3A", "DNMT3B", "DNMT3L", "DPF1",
-                  "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
-                  "GLYR1", "HDAC1", "HDAC10", "HDAC11", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7",
-                  "HDAC8", "HDAC9", "HDGF", "HDGFL1", "HDGFRP2", "HDGFRP3", "HIF1AN", "HR", "HSPBAP1", "ING1",
-                  "ING2", "ING3", "ING4", "ING5", "INO80", "INTS12", "JADE1", "JADE2", "JADE3", "JARID2", "JMJD1C",
-                  "JMJD4", "JMJD6", "JMJD7", "JMJD8", "KAT2A", "KAT2B", "KAT5", "KAT6A", "KAT6B", "KAT7", "KAT8",
-                  "KDM1A", "KDM1B", "KDM2A", "KDM2B", "KDM3A", "KDM3B", "KDM4A", "KDM4B", "KDM4C", "KDM4D",
-                  "KDM4E", "KDM5A", "KDM5B", "KDM5C", "KDM5D", "KDM6A", "KDM6B", "KDM7A", "KDM8", "KMT2A",
-                  "KMT2B", "KMT2C", "KMT2D", "KMT2E", "KMT5A", "KMT5B", "KMT5C", "L3MBTL1", "L3MBTL2", "L3MBTL3",
-                  "L3MBTL4", "LBR", "MBD1", "MBD2", "MBD3", "MBD4", "MBD5", "MBD6", "MBTD1", "MECP2", "MINA",
-                  "MLLT10", "MLLT6", "MORC1", "MORC2", "MORC3", "MORC4", "MPHOSPH8", "MSH6", "MSL3", "MTA1",
-                  "MTA2", "MTA3", "MTF2", "MUM1", "MUM1L1", "NSD1", "ORC1", "PBRM1", "PHF1", "PHF10", "PHF11",
-                  "PHF12", "PHF13", "PHF14", "PHF19", "PHF2", "PHF20", "PHF20L1", "PHF21A", "PHF21B", "PHF23",
-                  "PHF3", "PHF6", "PHF7", "PHF8", "PHIP", "PHRF1", "PRDM1", "PRDM10", "PRDM11", "PRDM12",
-                  "PRDM13", "PRDM14", "PRDM15", "PRDM16", "PRDM2", "PRDM4", "PRDM5", "PRDM6", "PRDM7", "PRDM8",
-                  "PRDM9", "PSIP1", "PWWP2A", "PWWP2B", "PYGO1", "PYGO2", "RAG2", "RAI1", "RERE", "RNF17",
-                  "RSF1", "SCMH1", "SCML2", "SETD1A", "SETD1B", "SETD2", "SETD3", "SETD4", "SETD5", "SETD6",
-                  "SETD7", "SETD9", "SETDB1", "SETDB2", "SETMAR", "SFMBT1", "SFMBT2", "SHPRH", "SIRT1", "SIRT2",
-                  "SIRT3", "SIRT4", "SIRT5", "SIRT6", "SIRT7", "SMARCA1", "SMARCA2", "SMARCA4", "SMARCA5", "SMN1",
-                  "SMNDC1", "SMYD1", "SMYD2", "SMYD3", "SMYD4", "SMYD5", "SND1", "SP110", "SP140", "SP140L",
-                  "SRCAP", "STK31", "SUV39H1", "SUV39H2", "TAF1", "TAF1L", "TAF3", "TCF19", "TCF20", "TDRD1",
-                  "TDRD10", "TDRD12", "TDRD15", "TDRD3", "TDRD5", "TDRD6", "TDRD7", "TDRD9", "TDRKH", "TET1",
-                  "TET2", "TET3", "TNRC18", "TRIM24", "TRIM28", "TRIM33", "TRIM66", "TYW5", "UBR7", "UHRF1",
-                  "UHRF2", "UTY", "WHSC1", "WHSC1L1", "ZCWPW1", "ZCWPW2", "ZMYND11", "ZMYND8")
+ target_genes <- c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
+  "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
+  "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
+  "CBX1", "CBX2", "CBX3", "CBX4", "CBX5", "CBX6", "CBX7", "CBX8", "CDY1", "CDY2A", "CDYL",
+  "CDYL2", "CECR2", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5", "CHD6", "CHD7", "CHD8", "CHD9",
+  "CREBBP", "CXXC1", "CXXC4", "CXXC5", "DIDO1", "DNMT1", "DNMT3A", "DNMT3B", "DNMT3L", "DPF1",
+  "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
+  "GLYR1", "HDAC1", "HDAC10", "HDAC11", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7",
+  "HDAC8", "HDAC9", "HDGF", "HDGFL1", "HDGFRP2", "HDGFRP3", "HIF1AN", "HR", "HSPBAP1", "ING1",
+  "ING2", "ING3", "ING4", "ING5", "INO80", "INTS12", "JADE1", "JADE2", "JADE3", "JARID2", "JMJD1C",
+  "JMJD4", "JMJD6", "JMJD7", "JMJD8", "KAT2A", "KAT2B", "KAT5", "KAT6A", "KAT6B", "KAT7", "KAT8",
+  "KDM1A", "KDM1B", "KDM2A", "KDM2B", "KDM3A", "KDM3B", "KDM4A", "KDM4B", "KDM4C", "KDM4D",
+  "KDM4E", "KDM5A", "KDM5B", "KDM5C", "KDM5D", "KDM6A", "KDM6B", "KDM7A", "KDM8", "KMT2A",
+  "KMT2B", "KMT2C", "KMT2D", "KMT2E", "KMT5A", "KMT5B", "KMT5C", "L3MBTL1", "L3MBTL2", "L3MBTL3",
+  "L3MBTL4", "LBR", "MBD1", "MBD2", "MBD3", "MBD4", "MBD5", "MBD6", "MBTD1", "MECP2", "MINA",
+  "MLLT10", "MLLT6", "MORC1", "MORC2", "MORC3", "MORC4", "MPHOSPH8", "MSH6", "MSL3", "MTA1",
+  "MTA2", "MTA3", "MTF2", "MUM1", "MUM1L1", "NSD1", "ORC1", "PBRM1", "PHF1", "PHF10", "PHF11",
+  "PHF12", "PHF13", "PHF14", "PHF19", "PHF2", "PHF20", "PHF20L1", "PHF21A", "PHF21B", "PHF23",
+  "PHF3", "PHF6", "PHF7", "PHF8", "PHIP", "PHRF1", "PRDM1", "PRDM10", "PRDM11", "PRDM12",
+  "PRDM13", "PRDM14", "PRDM15", "PRDM16", "PRDM2", "PRDM4", "PRDM5", "PRDM6", "PRDM7", "PRDM8",
+  "PRDM9", "PSIP1", "PWWP2A", "PWWP2B", "PYGO1", "PYGO2", "RAG2", "RAI1", "RERE", "RNF17",
+  "RSF1", "SCMH1", "SCML2", "SETD1A", "SETD1B", "SETD2", "SETD3", "SETD4", "SETD5", "SETD6",
+  "SETD7", "SETD9", "SETDB1", "SETDB2", "SETMAR", "SFMBT1", "SFMBT2", "SHPRH", "SIRT1", "SIRT2",
+  "SIRT3", "SIRT4", "SIRT5", "SIRT6", "SIRT7", "SMARCA1", "SMARCA2", "SMARCA4", "SMARCA5", "SMN1",
+  "SMNDC1", "SMYD1", "SMYD2", "SMYD3", "SMYD4", "SMYD5", "SND1", "SP110", "SP140", "SP140L",
+  "SRCAP", "STK31", "SUV39H1", "SUV39H2", "TAF1", "TAF1L", "TAF3", "TCF19", "TCF20", "TDRD1",
+  "TDRD10", "TDRD12", "TDRD15", "TDRD3", "TDRD5", "TDRD6", "TDRD7", "TDRD9", "TDRKH", "TET1",
+  "TET2", "TET3", "TNRC18", "TRIM24", "TRIM28", "TRIM33", "TRIM66", "TYW5", "UBR7", "UHRF1",
+  "UHRF2", "UTY", "WHSC1", "WHSC1L1", "ZCWPW1", "ZCWPW2", "ZMYND11", "ZMYND8")
 
 # ---- 2. Process ClinVar Variant Files for Each Gene ----
 # Variant files are assumed to be named "clinvar_result_[GENE].csv" and contain:
@@ -385,416 +389,3 @@ if(nrow(final_results) > 0) {
 } else {
   cat("No exons with Pathogenic or Likely Pathogenic variants were found.\n")
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Get Gnomad variants using API
-
-library(httr)
-library(jsonlite)
-library(dplyr)
-library(tidyr)
-
-# Function to get missense variants from gnomAD API for a given gene
-get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
-  base_url <- "https://gnomad.broadinstitute.org/api"
-  
-  query <- list(query = paste0('
-    {
-      gene(gene_symbol: "', gene, '", reference_genome: GRCh38) {
-        variants(dataset: ', dataset, ') {
-          variant_id
-          consequence
-          transcript_id
-          hgvsc
-          hgvsp
-          rsids
-        }
-      }
-    }
-  '))
-  
-  response <- POST(url = base_url, body = query, encode = "json")
-  
-  # Extract JSON response
-  response_data <- rawToChar(response$content)
-  parsed_data <- fromJSON(response_data, flatten = TRUE)
-  
-  if (!is.null(parsed_data$data$gene$variants)) {
-    variants <- as.data.frame(parsed_data$data$gene$variants)
-    
-    # Check if 'consequence' column exists
-    if (!"consequence" %in% colnames(variants)) {
-      message("Skipping gene: ", gene, " (no 'consequence' field found)")
-      return(data.frame())  # Return an empty dataframe
-    }
-    
-    variants <- variants %>%
-      dplyr::filter(consequence == "missense_variant") %>%
-      dplyr::select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
-    
-    # Convert list-type columns to comma-separated strings
-    variants <- variants %>% mutate(across(where(is.list), ~ sapply(., paste, collapse = ",")))
-    
-    # Split 'variant_id' into Chromosome, Position, Reference, and Alternate
-    variants <- variants %>%
-      separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE)
-    
-    # Reorder columns for better readability
-    variants <- variants %>%
-      dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
-    
-    file_name <- paste0("gnomAD_", gene, ".csv")
-    write.csv(variants, file = file_name, row.names = FALSE)
-    
-    message("Saved results to: ", file_name)
-    return(variants)
-  } else {
-    message("No variants found for gene: ", gene)
-    return(data.frame())
-  }
-}
-
-genes <- c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
-                  "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
-                  "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
-                  "CBX1", "CBX2", "CBX3", "CBX4", "CBX5", "CBX6", "CBX7", "CBX8", "CDY1", "CDY2A", "CDYL",
-                  "CDYL2", "CECR2", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5", "CHD6", "CHD7", "CHD8", "CHD9",
-                  "CREBBP", "CXXC1", "CXXC4", "CXXC5", "DIDO1", "DNMT1", "DNMT3A", "DNMT3B", "DNMT3L", "DPF1",
-                  "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
-                  "GLYR1", "HDAC1", "HDAC10", "HDAC11", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7",
-                  "HDAC8", "HDAC9", "HDGF", "HDGFL1", "HDGFRP2", "HDGFRP3", "HIF1AN", "HR", "HSPBAP1", "ING1",
-                  "ING2", "ING3", "ING4", "ING5", "INO80", "INTS12", "JADE1", "JADE2", "JADE3", "JARID2", "JMJD1C",
-                  "JMJD4", "JMJD6", "JMJD7", "JMJD8", "KAT2A", "KAT2B", "KAT5", "KAT6A", "KAT6B", "KAT7", "KAT8",
-                  "KDM1A", "KDM1B", "KDM2A", "KDM2B", "KDM3A", "KDM3B", "KDM4A", "KDM4B", "KDM4C", "KDM4D",
-                  "KDM4E", "KDM5A", "KDM5B", "KDM5C", "KDM5D", "KDM6A", "KDM6B", "KDM7A", "KDM8", "KMT2A",
-                  "KMT2B", "KMT2C", "KMT2D", "KMT2E", "KMT5A", "KMT5B", "KMT5C", "L3MBTL1", "L3MBTL2", "L3MBTL3",
-                  "L3MBTL4", "LBR", "MBD1", "MBD2", "MBD3", "MBD4", "MBD5", "MBD6", "MBTD1", "MECP2", "MINA",
-                  "MLLT10", "MLLT6", "MORC1", "MORC2", "MORC3", "MORC4", "MPHOSPH8", "MSH6", "MSL3", "MTA1",
-                  "MTA2", "MTA3", "MTF2", "MUM1", "MUM1L1", "NSD1", "ORC1", "PBRM1", "PHF1", "PHF10", "PHF11",
-                  "PHF12", "PHF13", "PHF14", "PHF19", "PHF2", "PHF20", "PHF20L1", "PHF21A", "PHF21B", "PHF23",
-                  "PHF3", "PHF6", "PHF7", "PHF8", "PHIP", "PHRF1", "PRDM1", "PRDM10", "PRDM11", "PRDM12",
-                  "PRDM13", "PRDM14", "PRDM15", "PRDM16", "PRDM2", "PRDM4", "PRDM5", "PRDM6", "PRDM7", "PRDM8",
-                  "PRDM9", "PSIP1", "PWWP2A", "PWWP2B", "PYGO1", "PYGO2", "RAG2", "RAI1", "RERE", "RNF17",
-                  "RSF1", "SCMH1", "SCML2", "SETD1A", "SETD1B", "SETD2", "SETD3", "SETD4", "SETD5", "SETD6",
-                  "SETD7", "SETD9", "SETDB1", "SETDB2", "SETMAR", "SFMBT1", "SFMBT2", "SHPRH", "SIRT1", "SIRT2",
-                  "SIRT3", "SIRT4", "SIRT5", "SIRT6", "SIRT7", "SMARCA1", "SMARCA2", "SMARCA4", "SMARCA5", "SMN1",
-                  "SMNDC1", "SMYD1", "SMYD2", "SMYD3", "SMYD4", "SMYD5", "SND1", "SP110", "SP140", "SP140L",
-                  "SRCAP", "STK31", "SUV39H1", "SUV39H2", "TAF1", "TAF1L", "TAF3", "TCF19", "TCF20", "TDRD1",
-                  "TDRD10", "TDRD12", "TDRD15", "TDRD3", "TDRD5", "TDRD6", "TDRD7", "TDRD9", "TDRKH", "TET1",
-                  "TET2", "TET3", "TNRC18", "TRIM24", "TRIM28", "TRIM33", "TRIM66", "TYW5", "UBR7", "UHRF1",
-                  "UHRF2", "UTY", "WHSC1", "WHSC1L1", "ZCWPW1", "ZCWPW2", "ZMYND11", "ZMYND8")
-
-# Fetch missense variants for each gene and save to individual files
-missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
-
-# Combine results into a single dataframe
-missense_variants_df <- bind_rows(missense_variants_list)
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Count gnomad variants in each exon
-
-# Load required libraries
-library(dplyr)
-library(readr)  # For read_csv
-
-# ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read.csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
-
-# Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
-# Convert exon coordinates to numeric
-exons$exon_start <- as.numeric(exons$exon_start)
-exons$exon_end   <- as.numeric(exons$exon_end)
-
-# Define target genes
-target_genes <- c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
-                  "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
-                  "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
-                  "CBX1", "CBX2", "CBX3", "CBX4", "CBX5", "CBX6", "CBX7", "CBX8", "CDY1", "CDY2A", "CDYL",
-                  "CDYL2", "CECR2", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5", "CHD6", "CHD7", "CHD8", "CHD9",
-                  "CREBBP", "CXXC1", "CXXC4", "CXXC5", "DIDO1", "DNMT1", "DNMT3A", "DNMT3B", "DNMT3L", "DPF1",
-                  "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
-                  "GLYR1", "HDAC1", "HDAC10", "HDAC11", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7",
-                  "HDAC8", "HDAC9", "HDGF", "HDGFL1", "HDGFRP2", "HDGFRP3", "HIF1AN", "HR", "HSPBAP1", "ING1",
-                  "ING2", "ING3", "ING4", "ING5", "INO80", "INTS12", "JADE1", "JADE2", "JADE3", "JARID2", "JMJD1C",
-                  "JMJD4", "JMJD6", "JMJD7", "JMJD8", "KAT2A", "KAT2B", "KAT5", "KAT6A", "KAT6B", "KAT7", "KAT8",
-                  "KDM1A", "KDM1B", "KDM2A", "KDM2B", "KDM3A", "KDM3B", "KDM4A", "KDM4B", "KDM4C", "KDM4D",
-                  "KDM4E", "KDM5A", "KDM5B", "KDM5C", "KDM5D", "KDM6A", "KDM6B", "KDM7A", "KDM8", "KMT2A",
-                  "KMT2B", "KMT2C", "KMT2D", "KMT2E", "KMT5A", "KMT5B", "KMT5C", "L3MBTL1", "L3MBTL2", "L3MBTL3",
-                  "L3MBTL4", "LBR", "MBD1", "MBD2", "MBD3", "MBD4", "MBD5", "MBD6", "MBTD1", "MECP2", "MINA",
-                  "MLLT10", "MLLT6", "MORC1", "MORC2", "MORC3", "MORC4", "MPHOSPH8", "MSH6", "MSL3", "MTA1",
-                  "MTA2", "MTA3", "MTF2", "MUM1", "MUM1L1", "NSD1", "ORC1", "PBRM1", "PHF1", "PHF10", "PHF11",
-                  "PHF12", "PHF13", "PHF14", "PHF19", "PHF2", "PHF20", "PHF20L1", "PHF21A", "PHF21B", "PHF23",
-                  "PHF3", "PHF6", "PHF7", "PHF8", "PHIP", "PHRF1", "PRDM1", "PRDM10", "PRDM11", "PRDM12",
-                  "PRDM13", "PRDM14", "PRDM15", "PRDM16", "PRDM2", "PRDM4", "PRDM5", "PRDM6", "PRDM7", "PRDM8",
-                  "PRDM9", "PSIP1", "PWWP2A", "PWWP2B", "PYGO1", "PYGO2", "RAG2", "RAI1", "RERE", "RNF17",
-                  "RSF1", "SCMH1", "SCML2", "SETD1A", "SETD1B", "SETD2", "SETD3", "SETD4", "SETD5", "SETD6",
-                  "SETD7", "SETD9", "SETDB1", "SETDB2", "SETMAR", "SFMBT1", "SFMBT2", "SHPRH", "SIRT1", "SIRT2",
-                  "SIRT3", "SIRT4", "SIRT5", "SIRT6", "SIRT7", "SMARCA1", "SMARCA2", "SMARCA4", "SMARCA5", "SMN1",
-                  "SMNDC1", "SMYD1", "SMYD2", "SMYD3", "SMYD4", "SMYD5", "SND1", "SP110", "SP140", "SP140L",
-                  "SRCAP", "STK31", "SUV39H1", "SUV39H2", "TAF1", "TAF1L", "TAF3", "TCF19", "TCF20", "TDRD1",
-                  "TDRD10", "TDRD12", "TDRD15", "TDRD3", "TDRD5", "TDRD6", "TDRD7", "TDRD9", "TDRKH", "TET1",
-                  "TET2", "TET3", "TNRC18", "TRIM24", "TRIM28", "TRIM33", "TRIM66", "TYW5", "UBR7", "UHRF1",
-                  "UHRF2", "UTY", "WHSC1", "WHSC1L1", "ZCWPW1", "ZCWPW2", "ZMYND11", "ZMYND8")
-
-# ---- 2. Process gnomAD Variant Files for Each Gene ----
-# Variant files are assumed to be named "gnomAD_[GENE].csv" and contain:
-#   - Chromosome column: "Chromosome"
-#   - Position column: "Position"
-#
-# For each exon, we count the number of variants (rows) that fall within its coordinates.
-# Then we compute the variant density = variant_count / (exon_end - exon_start).
-
-# Create an empty list to store exon variant counts
-exon_variant_counts <- list()
-
-for (g in target_genes) {
-  variant_file <- paste0("gnomAD_", g, ".csv")
-  
-  if (!file.exists(variant_file)) {
-    message("File not found: ", variant_file, " ... skipping.")
-    next
-  }
-  
-  # Read the variant file (assuming CSV format)
-  variants <- read_csv(variant_file, show_col_types = FALSE)
-  
-  # Clean up column names: trim any leading/trailing whitespace
-  colnames(variants) <- trimws(colnames(variants))
-  
-  # (Optional) Debug: print column names
-  # cat("Columns in", variant_file, ":\n")
-  # print(colnames(variants))
-  
-  # Check for the required columns
-  required_cols <- c("Chromosome", "Position")
-  if (!all(required_cols %in% names(variants))) {
-    warning("Variant file ", variant_file, " does not contain the required columns. Skipping.")
-    next
-  }
-  
-  # Convert the Position column to numeric.
-  variants[["Position"]] <- as.numeric(variants[["Position"]])
-  
-  # Ensure the Chromosome column is character.
-  variants[["Chromosome"]] <- as.character(variants[["Chromosome"]])
-  
-  # Get the exon data for the current gene
-  gene_exons <- dplyr::filter(exons, gene == g)
-  
-  if (nrow(gene_exons) == 0) {
-    message("No exon data for gene ", g, " found in exon file.")
-    next
-  }
-  
-  # For each exon, count the number of variants (rows) that fall within its coordinates.
-  gene_exon_counts <- gene_exons %>%
-    rowwise() %>%
-    mutate(
-      variant_count = sum(
-        variants[["Chromosome"]] == as.character(exon_chr) &
-          variants[["Position"]] >= exon_start &
-          variants[["Position"]] <= exon_end,
-        na.rm = TRUE
-      ),
-      # Calculate variant density = variant_count divided by exon length.
-      variant_density = variant_count / (exon_end - exon_start)
-    ) %>%
-    ungroup()
-  
-  # Keep only exons with at least one variant.
-  gene_exon_counts <- gene_exon_counts %>% dplyr::filter(variant_count > 0)
-  
-  if (nrow(gene_exon_counts) > 0) {
-    exon_variant_counts[[g]] <- gene_exon_counts
-  }
-}
-
-# Combine results from all genes
-final_results <- bind_rows(exon_variant_counts)
-
-# Write results to an output CSV file if any exons have variants
-if (nrow(final_results) > 0) {
-  output <- final_results %>%
-    dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
-  
-  write.csv(output, "exon_gnomad_variant_counts.csv", row.names = FALSE)
-  cat("Exon gnomAD variant counts and densities have been saved to 'exon_gnomad_variant_counts.csv'.\n")
-} else {
-  cat("No exons with variants were found in the gnomAD files.\n")
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-                       
-                       
-# Run fisher test to find statistically significant enrichment in exons
-
-library(dplyr)
-library(readr)
-
-# Load variant counts and exon metadata
-clinvar_df <- read_csv("exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad_df <- read_csv("exon_gnomad_variant_counts.csv", show_col_types = FALSE)
-all_exons <- read_csv("all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
-
-# Merge ClinVar and gnomAD counts on exon ID
-merged_variants <- full_join(clinvar_df, gnomad_df,
-                             by = c("gene", "ensembl_exon_id", "exon_chr", "exon_start", "exon_end", "isoform_type"),
-                             suffix = c("_clinvar", "_gnomad")) %>%
-  mutate(across(c(variant_count_clinvar, variant_count_gnomad), ~replace_na(., 0)))
-
-# Get gene-level totals for all exons (per source)
-total_variant_counts <- merged_variants %>%
-  group_by(gene) %>%
-  summarize(
-    total_clinvar_gene = sum(variant_count_clinvar, na.rm = TRUE),
-    total_gnomad_gene = sum(variant_count_gnomad, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-# Merge gene-level totals
-merged_variants <- merged_variants %>%
-  left_join(total_variant_counts, by = "gene") %>%
-  mutate(
-    a = variant_count_clinvar,
-    b = total_clinvar_gene - variant_count_clinvar,
-    c = variant_count_gnomad,
-    d = total_gnomad_gene - variant_count_gnomad
-  )
-
-# Run Fisher's Exact Test for each exon
-fisher_results <- merged_variants %>%
-  rowwise() %>%
-  mutate(
-    fisher_p = tryCatch({
-      mat <- matrix(c(a, b, c, d), nrow = 2)
-      fisher.test(mat)$p.value
-    }, error = function(e) NA_real_)
-  ) %>%
-  ungroup()
-
-# Add FDR correction
-fisher_results <- fisher_results %>%
-  mutate(fdr = p.adjust(fisher_p, method = "fdr"))
-
-# Optional: Calculate ClinVar-to-gnomAD enrichment ratio
-fisher_results <- fisher_results %>%
-  mutate(
-    clinvar_ratio = a / (a + b + 1e-6),  # add small value to avoid div by 0
-    gnomad_ratio  = c / (c + d + 1e-6),
-    enrichment_ratio = clinvar_ratio / gnomad_ratio
-  )
-
-# Save to CSV
-write_csv(fisher_results, "exon_fisher_enrichment_results.csv")
-cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
-
-
-
-
-
-
-
-
-
-
-# Whole gene fisher test checking enrichment difference between canonical and non canonical isoforms
-
-library(dplyr)
-library(readr)
-library(tidyr)
-
-# Load the exon-level Fisher results (which already include a/c and isoform type)
-merged <- read_csv("exon_fisher_enrichment_results.csv", show_col_types = FALSE)
-
-# Check if needed columns are present
-stopifnot(all(c("gene", "isoform_type", "a", "c") %in% colnames(merged)))
-
-# Summarize ClinVar and gnomAD counts by gene and isoform type
-summary_by_gene <- merged %>%
-  group_by(gene, isoform_type) %>%
-  summarize(
-    clinvar = sum(a, na.rm = TRUE),
-    gnomad = sum(c, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-# Convert to wide format to separate canonical and non-canonical counts per gene
-wide_by_gene <- summary_by_gene %>%
-  pivot_wider(
-    names_from = isoform_type,
-    values_from = c(clinvar, gnomad),
-    values_fill = 0  # fill with 0 if a gene lacks one exon type
-  )
-
-# Optional: Keep only genes with both isoform types
-wide_by_gene <- wide_by_gene %>%
-  filter(!is.na(clinvar_canonical), !is.na(clinvar_non_canonical))
-
-# Run Fisher's exact test per gene
-fisher_results_per_gene <- wide_by_gene %>%
-  rowwise() %>%
-  mutate(
-    fisher_p = tryCatch({
-      mat <- matrix(c(
-        clinvar_non_canonical, clinvar_canonical,
-        gnomad_non_canonical, gnomad_canonical
-      ), nrow = 2)
-      fisher.test(mat)$p.value
-    }, error = function(e) NA_real_)
-  ) %>%
-  ungroup()
-
-# Add FDR correction for multiple testing
-fisher_results_per_gene <- fisher_results_per_gene %>%
-  mutate(
-    fdr = p.adjust(fisher_p, method = "fdr")
-  )
-
-# Add enrichment ratio
-fisher_results_per_gene <- fisher_results_per_gene %>%
-  mutate(
-    clinvar_ratio = clinvar_non_canonical / (clinvar_non_canonical + clinvar_canonical + 1e-6),
-    gnomad_ratio  = gnomad_non_canonical / (gnomad_non_canonical + gnomad_canonical + 1e-6),
-    enrichment_ratio = clinvar_ratio / gnomad_ratio
-  )
-
-# Save output
-write_csv(fisher_results_per_gene, "per_gene_fisher_results.csv")
-cat("✔ Per-gene Fisher's test results saved to 'per_gene_fisher_results.csv'\n")
