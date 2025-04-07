@@ -57,3 +57,11 @@ fisher_results <- fisher_results %>%
 # Save to CSV
 write_csv(fisher_results, "exon_fisher_enrichment_results.csv")
 cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
+
+top_hits <- fisher_results %>%
+  filter(fdr < 0.05) %>%
+  arrange(desc(enrichment_ratio))
+
+write_csv(top_hits, "exon_top_clinvar_enriched.csv")
+cat("✔ Fisher's exact top exon results saved to 'exon_fisher_enrichment_results.csv'\n")
+
