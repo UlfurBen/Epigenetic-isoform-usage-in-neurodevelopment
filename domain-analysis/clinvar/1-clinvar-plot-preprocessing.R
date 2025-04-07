@@ -52,5 +52,5 @@ domain_counts <- domain_data %>%
 ###############################################################
 # 4) Save output
 ###############################################################
-write_tsv(domain_counts, "mecp2_domain_variant_counts.tsv")
-message("✅ Domain variant counts saved to: mecp2_domain_variant_counts.tsv")
+write_tsv(domain_counts, "kmt2a_domain_variant_counts.tsv")
+message("✅ Domain variant counts saved to: kmt2a_domain_variant_counts.tsv")
