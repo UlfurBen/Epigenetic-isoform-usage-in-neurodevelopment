@@ -10,7 +10,7 @@ exons$exon_start <- as.numeric(exons$exon_start)
 exons$exon_end   <- as.numeric(exons$exon_end)
 
 # Define target genes (updated list)
-target_genes <- c("A1BG","A1BG-AS1")
+target_genes <- c("KMT2A")
 
 # ---- 2. Process ClinVar Variant Files for Each Gene ----
 # Variant files are assumed to be named "clinvar_result_[GENE].csv" and contain:
