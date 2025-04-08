@@ -96,13 +96,13 @@ unique_exons <- exons_joined %>%
   dplyr::filter(n_transcripts == 1)  # Only exons unique to a single isoform
 
 # Save all unique exons (both canonical and non-canonical)
-write.csv(unique_exons, "all_exons_canonical_and_noncanonical.csv", row.names = FALSE)
+write.csv(unique_exons, "whole_genome_exons_canonical_and_noncanonical.csv", row.names = FALSE)
 
 # Save only canonical unique exons
 canonical_exons_only <- unique_exons %>% filter(isoform_type == "canonical")
 write.csv(canonical_exons_only, "canonical_unique_exons.csv", row.names = FALSE)
 
-cat("✔ All unique exons saved to 'all_exons_canonical_and_noncanonical.csv'\n")
+cat("✔ All unique exons saved to 'whole_genome_exons_canonical_and_noncanonical.csv'\n")
 cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
 
 
@@ -197,7 +197,7 @@ library(tidyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
@@ -299,8 +299,8 @@ if(nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "exon_clinvar_variant_counts.csv", row.names = FALSE)
-  cat("Exon ClinVar variant counts and densities have been saved to 'exon_clinvar_variant_counts.csv'.\n")
+  write.csv(output, "whole_genome_exon_clinvar_variant_counts.csv", row.names = FALSE)
+  cat("Exon ClinVar variant counts and densities have been saved to 'whole_genome_exon_clinvar_variant_counts.csv'.\n")
 } else {
   cat("No exons with Pathogenic or Likely Pathogenic variants were found.\n")
 }
@@ -348,18 +348,35 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   '))
   
   response <- POST(url = base_url, body = query, encode = "json")
+
+  # Check for successful status code and correct content type
+  if (http_type(response) != "application/json") {
+    message("⚠️  Non-JSON response for gene: ", gene, " — skipping.")
+    return(data.frame())
+  }
   
-  # Extract JSON response
+  # Extract and parse JSON
   response_data <- rawToChar(response$content)
-  parsed_data <- fromJSON(response_data, flatten = TRUE)
+  parsed_data <- tryCatch(
+    fromJSON(response_data, flatten = TRUE),
+    error = function(e) {
+      message("❌ JSON parse error for gene: ", gene)
+      return(NULL)
+    }
+  )
   
-  if (!is.null(parsed_data$data$gene$variants)) {
-    variants <- as.data.frame(parsed_data$data$gene$variants)
+  if (is.null(parsed_data) || is.null(parsed_data$data$gene$variants)) {
+    message("No variants found for gene: ", gene)
+    return(data.frame())
+  }
+
+  # Continue processing
+  variants <- as.data.frame(parsed_data$data$gene$variants)
     
     # Check if 'consequence' column exists
     if (!"consequence" %in% colnames(variants)) {
       message("Skipping gene: ", gene, " (no 'consequence' field found)")
-      return(data.frame())  # Return an empty dataframe
+      return(data.frame())
     }
     
     variants <- variants %>%
@@ -369,23 +386,20 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
     # Convert list-type columns to comma-separated strings
     variants <- variants %>% mutate(across(where(is.list), ~ sapply(., paste, collapse = ",")))
     
-    # Split 'variant_id' into Chromosome, Position, Reference, and Alternate
-    variants <- variants %>%
-      separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE)
+    # Split variant ID
+  variants <- variants %>%
+    separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE) %>%
+    dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
     
     # Reorder columns for better readability
     variants <- variants %>%
       dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
-    
-    file_name <- paste0("gnomAD_", gene, ".csv")
-    write.csv(variants, file = file_name, row.names = FALSE)
-    
-    message("Saved results to: ", file_name)
-    return(variants)
-  } else {
-    message("No variants found for gene: ", gene)
-    return(data.frame())
-  }
+
+    # Save to file
+  file_name <- paste0("gnomAD_", gene, ".csv")
+  write.csv(variants, file = file_name, row.names = FALSE)
+  message("✅ Saved results to: ", file_name)
+  return(variants)
 }
 
 genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
@@ -398,9 +412,6 @@ missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
 # Combine results into a single dataframe
 missense_variants_df <- bind_rows(missense_variants_list)
 
-# Print results. Only use for small list of genes
-# print(missense_variants_df)
-
 
 
 
@@ -414,6 +425,8 @@ missense_variants_df <- bind_rows(missense_variants_list)
 
 
 
+
+# GnomAd missense variant count in each unique exon
                        
 # Load required libraries
 library(dplyr)
@@ -421,7 +434,7 @@ library(tidyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
@@ -452,7 +465,7 @@ for (g in target_genes) {
   }
   
   # Read the variant file (assuming CSV format)
-  variants <- read_tsv(variant_file, show_col_types = FALSE)
+  variants <- read_csv(variant_file, show_col_types = FALSE)
   
   # Clean up column names: trim any leading/trailing whitespace
   colnames(variants) <- trimws(colnames(variants))
@@ -513,8 +526,8 @@ if (nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "exon_gnomad_variant_counts.csv", row.names = FALSE)
-  cat("Exon gnomAD variant counts and densities have been saved to 'exon_gnomad_variant_counts.csv'.\n")
+  write.csv(output, "whole_genome_exon_gnomad_variant_counts.csv", row.names = FALSE)
+  cat("Exon gnomAD variant counts and densities have been saved to 'whole_genome_exon_gnomad_variant_counts.csv'.\n")
 } else {
   cat("No exons with variants were found in the gnomAD files.\n")
 }
@@ -540,9 +553,9 @@ library(dplyr)
 library(readr)
 
 # Load variant counts and exon metadata
-clinvar_df <- read_csv("exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad_df <- read_csv("exon_gnomad_variant_counts.csv", show_col_types = FALSE)
-all_exons <- read_csv("all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
+clinvar_df <- read_csv("whole_genome_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
+gnomad_df <- read_csv("whole_genome_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
+all_exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
 
 # Merge ClinVar and gnomAD counts on exon ID
 merged_variants <- full_join(clinvar_df, gnomad_df,
@@ -584,17 +597,21 @@ fisher_results <- merged_variants %>%
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
-# Optional: Calculate ClinVar-to-gnomAD enrichment ratio
-fisher_results <- fisher_results %>%
-  mutate(
-    clinvar_ratio = a / (a + b + 1e-6),  # add small value to avoid div by 0
-    gnomad_ratio  = c / (c + d + 1e-6),
-    enrichment_ratio = clinvar_ratio / gnomad_ratio
+# Select only desired columns
+fisher_results_limited <- fisher_results %>%
+  dplyr::select(
+    gene,
+    ensembl_exon_id,
+    isoform_type,
+    variant_count_clinvar = a,
+    variant_count_gnomad = c,
+    fisher_p,
+    fdr
   )
 
-# Save to CSV
-write_csv(fisher_results, "exon_fisher_enrichment_results.csv")
-cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
+# Save full results (limited columns)
+write_csv(fisher_results_limited, "whole_genome_exon_fisher_enrichment_results.csv")
+cat("✔ Fisher's exact test results saved to 'whole_genome_exon_fisher_enrichment_results.csv'\n")
 
 
 
@@ -617,12 +634,12 @@ library(readr)
 library(tidyr)
 
 # Load the exon-level Fisher results (which already include a/c and isoform type)
-merged <- read_csv("exon_fisher_enrichment_results.csv", show_col_types = FALSE)
+merged <- read_csv("whole_genome_exon_fisher_enrichment_results.csv", show_col_types = FALSE)
 
 # Check if needed columns are present
 required_cols <- c("gene", "isoform_type", "a", "c")
 if (!all(required_cols %in% colnames(merged))) {
-  stop("❌ One or more required columns are missing from 'exon_fisher_enrichment_results.csv': ", 
+  stop("❌ One or more required columns are missing from 'whole_genome_exon_fisher_enrichment_results.csv': ", 
        paste(setdiff(required_cols, colnames(merged)), collapse = ", "))
 }
 
@@ -676,5 +693,5 @@ fisher_results_per_gene <- fisher_results_per_gene %>%
   )
 
 # Save output
-write_csv(fisher_results_per_gene, "per_gene_fisher_results.csv")
-cat("✔ Per-gene Fisher's test results saved to 'per_gene_fisher_results.csv'\n")
+write_csv(fisher_results_per_gene, "whole_genome_per_gene_fisher_results.csv")
+cat("✔ Per-gene Fisher's test results saved to 'whole_genome_per_gene_fisher_results.csv'\n")
