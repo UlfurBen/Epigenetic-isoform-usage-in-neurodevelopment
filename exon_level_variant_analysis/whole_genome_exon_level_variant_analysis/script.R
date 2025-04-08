@@ -118,10 +118,10 @@ cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
 
 
 
-# Retrieve ClinVar variants from clinvar vcf file
+# Retrieve ClinVar variants from clinvar VCF file
 
 # Download clinvar vcf file from https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/
-# There download clinvar.vcf.gz and gunzip
+# There, download clinvar.vcf.gz and gunzip
 
 library(dplyr)
 library(readr)
@@ -130,39 +130,46 @@ library(stringr)
 
 # Function to extract missense variants for a given gene
 extract_clinvar_missense <- function(vcf_file, gene) {
+  # Define output file name for this gene
+  output_file <- paste0("clinvar_result_", gene, ".csv")
+
+  # Skip processing if file already exists
+  if (file.exists(output_file)) {
+    message("⚠️ Skipping ", gene, " — file already exists.")
+    return(NULL)
+  }
+
   # Read VCF file, skipping header lines (lines starting with '#')
   clinvar_data <- read_tsv(vcf_file, comment = "#", col_names = FALSE, show_col_types = FALSE)
   
   # Define column names (from VCF format)
   colnames(clinvar_data) <- c("CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO")
   
-  # Filter rows containing the specific gene
+  # Filter rows containing the specific gene and missense variants
   gene_variants <- clinvar_data %>%
-    dplyr::filter(str_detect(INFO, paste0("GENEINFO=", gene, ":"))) %>%
-    dplyr::filter(str_detect(INFO, "MC=SO:0001583\\|missense_variant"))  # Keep only missense variants
+    filter(str_detect(INFO, paste0("GENEINFO=", gene, ":"))) %>%
+    filter(str_detect(INFO, "MC=SO:0001583\\|missense_variant"))
   
-  # Extract Clinical Significance (CLNSIG) from INFO column
+  # Extract Clinical Significance (CLNSIG)
   gene_variants <- gene_variants %>%
     mutate(CLNSIG = str_extract(INFO, "CLNSIG=[^;]+")) %>%
-    mutate(CLNSIG = str_replace(CLNSIG, "CLNSIG=", ""))  # Remove "CLNSIG=" prefix
-
-    # Filter for pathogenic and likely pathogenic variants
-  gene_variants <- gene_variants %>%
-    dplyr::filter(str_detect(CLNSIG, "Pathogenic|Likely_pathogenic"))
+    mutate(CLNSIG = str_replace(CLNSIG, "CLNSIG=", ""))
   
-  # Select relevant columns and rename them
+  # Keep only pathogenic and likely pathogenic variants
   gene_variants <- gene_variants %>%
-    dplyr::select(CHROM, POS, ID, REF, ALT, CLNSIG)
+    filter(str_detect(CLNSIG, "Pathogenic|Likely_pathogenic"))
   
-  # Save results to a gene-specific CSV file
-  output_file <- paste0("clinvar_result_", gene, ".csv")
+  # Select relevant columns
+  gene_variants <- gene_variants %>%
+    select(CHROM, POS, ID, REF, ALT, CLNSIG)
+  
+  # Save results to file
   write_csv(gene_variants, output_file)
-  
   message("✅ Saved ", nrow(gene_variants), " variants to: ", output_file)
   return(gene_variants)
 }
 
-# Define input VCF file and gene list
+# Define input VCF file and read gene list
 vcf_file <- "clinvar.vcf"
 genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
@@ -170,6 +177,7 @@ genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE)
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
+
 
 
 
@@ -326,10 +334,17 @@ library(jsonlite)
 library(dplyr)
 library(tidyr)
 library(readr)
-                       
 
 # Function to get missense variants from gnomAD API for a given gene
 get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
+  file_name <- paste0("gnomAD_", gene, ".csv")
+  
+  # Check if file already exists
+  if (file.exists(file_name)) {
+    message("⚠️ Skipping ", gene, " — file already exists.")
+    return(NULL)
+  }
+  
   base_url <- "https://gnomad.broadinstitute.org/api"
   
   query <- list(query = paste0('
@@ -373,44 +388,41 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   # Continue processing
   variants <- as.data.frame(parsed_data$data$gene$variants)
     
-    # Check if 'consequence' column exists
-    if (!"consequence" %in% colnames(variants)) {
-      message("Skipping gene: ", gene, " (no 'consequence' field found)")
-      return(data.frame())
-    }
+  if (!"consequence" %in% colnames(variants)) {
+    message("Skipping gene: ", gene, " (no 'consequence' field found)")
+    return(data.frame())
+  }
     
-    variants <- variants %>%
-      dplyr::filter(consequence == "missense_variant") %>%
-      dplyr::select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
+  variants <- variants %>%
+    filter(consequence == "missense_variant") %>%
+    select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
     
-    # Convert list-type columns to comma-separated strings
-    variants <- variants %>% mutate(across(where(is.list), ~ sapply(., paste, collapse = ",")))
+  # Convert list-type columns to comma-separated strings
+  variants <- variants %>%
+    mutate(across(where(is.list), ~ sapply(., paste, collapse = ",")))
     
-    # Split variant ID
+  # Split variant ID
   variants <- variants %>%
     separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE) %>%
-    dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
-    
-    # Reorder columns for better readability
-    variants <- variants %>%
-      dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
+    select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
 
-    # Save to file
-  file_name <- paste0("gnomAD_", gene, ".csv")
+  # Save to file
   write.csv(variants, file = file_name, row.names = FALSE)
   message("✅ Saved results to: ", file_name)
   return(variants)
 }
 
+# Read gene list
 genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
   pull(gene)
 
-# Fetch missense variants for each gene and save to individual files
+# Fetch missense variants for each gene, skipping existing files
 missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
 
-# Combine results into a single dataframe
-missense_variants_df <- bind_rows(missense_variants_list)
+# Combine results into a single dataframe (excluding NULLs from skipped genes)
+missense_variants_df <- bind_rows(Filter(Negate(is.null), missense_variants_list))
+
 
 
 
