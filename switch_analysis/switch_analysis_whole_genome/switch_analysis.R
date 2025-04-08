@@ -145,3 +145,7 @@ top_hits <- anova_results %>%
 
 print("Top significantly upregulated isoforms:")
 print(top_hits)
+
+write.csv(top_hits, "top_hits_whole_genome_significant_isoform_upregulation_by_day.csv", row.names = FALSE)
+
+                    
