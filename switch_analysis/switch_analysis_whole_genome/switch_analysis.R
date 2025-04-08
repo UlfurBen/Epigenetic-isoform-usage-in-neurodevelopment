@@ -4,6 +4,9 @@
 # using MOUSE GTF & FASTA from HPC cluster, filtering for specific genes
 ###############################################################
 
+library(tidyr)
+library(broom)
+
 # 1) Load or Install Packages -------------------------------------------
 if(!requireNamespace("BiocManager", quietly=TRUE)) {
   install.packages("BiocManager")
@@ -73,9 +76,6 @@ print("Isoform expression levels saved for plotting.")
 # Run ANOVA + Tukey's HSD per isoform to detect significantly 
 # upregulated day (Day3, Day6, or Day12) based on expression
 ###############################################################
-
-library(tidyr)
-library(broom)
 
 # 10) Reshape to long format ---------------------------------------------
 long_df <- all_3_6_12 %>%
