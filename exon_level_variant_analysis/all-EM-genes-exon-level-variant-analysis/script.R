@@ -655,10 +655,13 @@ fisher_results_limited <- fisher_results %>%
 write_csv(fisher_results_limited, "exon_fisher_enrichment_results.csv")
 cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
 
-# Save top hits (FDR < 0.05), sorted by enrichment
-#top_hits <- fisher_results_limited %>%
-#  filter(fdr < 0.05) %>%
-#  arrange(fdr)
-#
-#write_csv(top_hits, "fisher_exon_top_clinvar_enriched.csv")
-#cat("✔ Fisher's exact top exon results saved to 'exon_top_clinvar_enriched.csv'\n")
+# Identify genes with at least one exon showing significant ClinVar enrichment
+significant_genes <- fisher_results_limited %>%
+  filter(fdr < 0.05) %>%
+  distinct(gene)
+
+# Count how many unique genes
+cat("✔ Number of genes with at least one exon significantly enriched (FDR < 0.05):", nrow(significant_genes), "\n")
+
+# Save list of these genes if needed
+write_csv(significant_genes, "all_EM_genes_with_significant_exons.csv")
