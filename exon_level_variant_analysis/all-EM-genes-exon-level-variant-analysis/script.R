@@ -209,7 +209,7 @@ gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, 
 
 
 
-
+# Count clinvar variants in each exon
 
 # Load required libraries
 library(dplyr)
@@ -426,8 +426,6 @@ missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
 # Combine results into a single dataframe
 missense_variants_df <- bind_rows(missense_variants_list)
 
-# Print results. Only use for small list of genes
-# print(missense_variants_df)
 
 
 
@@ -449,8 +447,7 @@ missense_variants_df <- bind_rows(missense_variants_list)
 
 
 
-
-# GnomAd missense variant count in each exon 
+# GnomAd missense variant count in each unique exon 
 
 # Load required libraries
 library(dplyr)
