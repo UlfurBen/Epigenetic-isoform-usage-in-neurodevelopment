@@ -4,9 +4,6 @@
 # using MOUSE GTF & FASTA from HPC cluster, filtering for specific genes
 ###############################################################
 
-library(tidyr)
-library(broom)
-
 # 1) Load or Install Packages -------------------------------------------
 if(!requireNamespace("BiocManager", quietly=TRUE)) {
   install.packages("BiocManager")
@@ -16,6 +13,8 @@ if(!requireNamespace("IsoformSwitchAnalyzeR", quietly=TRUE)) {
 }
 library(IsoformSwitchAnalyzeR)
 library(dplyr)
+library(tidyr)
+library(broom)
 
 # 2) Define Gene List --------------------------------------------------
 gene_list <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
