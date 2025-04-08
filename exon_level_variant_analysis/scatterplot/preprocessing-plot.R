@@ -23,5 +23,5 @@ merged <- merged %>%
   )
 
 # Save to file
-write_csv(merged_with_constraints, "exon_clinvar_gnomad_ratio_output.csv")
+write_csv(merged, "exon_clinvar_gnomad_ratio_output.csv")
 cat("✔ Saved ClinVar/gnomAD ratio data with constraint scores to 'exon_clinvar_gnomad_ratio_output.csv'\n")
