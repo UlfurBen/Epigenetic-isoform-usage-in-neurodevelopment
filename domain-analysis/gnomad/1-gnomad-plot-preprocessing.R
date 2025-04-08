@@ -14,9 +14,9 @@ library(httr)
 library(jsonlite)
 
 ###############################################################
-## 1) Parse CHD3 Domain Data from InterPro TSV File
+## 1) Parse kmt2a Domain Data from InterPro TSV File
 ###############################################################
-get_chd3_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") {
+get_kmt2a_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") {
   df <- read_tsv(file_path, show_col_types = FALSE)
   
   domain_df <- df %>%
@@ -27,7 +27,7 @@ get_chd3_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") {
     arrange(Start)
   
   write.csv(domain_df, "kmt2a_domains.csv", row.names = FALSE)
-  message("✅ kmt2a domain data saved to: chd3_domains.csv")
+  message("✅ kmt2a domain data saved to: kmt2a_domains.csv")
   
   return(domain_df)
 }
@@ -113,16 +113,16 @@ map_variants_to_domains <- function(variants_df, domains_df) {
 ###############################################################
 ## 5) Run Full Pipeline
 ###############################################################
-retrieve_and_analyze_chd3_data <- function(
+retrieve_and_analyze_kmt2a_data <- function(
     gene = "kmt2a",
     gnomad_dataset = "gnomad_r3",
-    domain_tsv = "entry-matching-Q12873-chd3.tsv"
+    domain_tsv = "entry-matching-Q12873-kmt2a.tsv"
 ) {
-  domains <- get_chd3_domains_from_tsv(domain_tsv)
+  domains <- get_kmt2a_domains_from_tsv(domain_tsv)
   variants <- get_missense_variants_gnomad(gene, gnomad_dataset)
   
-  write.csv(variants, "chd3_variants.csv", row.names = FALSE)
-  message("✅ Raw variant data saved to: chd3_variants.csv")
+  write.csv(variants, "kmt2a_variants.csv", row.names = FALSE)
+  message("✅ Raw variant data saved to: kmt2a_variants.csv")
   
   final_result <- map_variants_to_domains(variants, domains)
   return(final_result)
@@ -131,4 +131,4 @@ retrieve_and_analyze_chd3_data <- function(
 ###############################################################
 ## 6) Execute
 ###############################################################
-results <- retrieve_and_analyze_chd3_data()
+results <- retrieve_and_analyze_kmt2a_data()
