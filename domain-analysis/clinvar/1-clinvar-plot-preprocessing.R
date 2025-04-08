@@ -17,12 +17,15 @@ clinvar_data <- read_tsv("clinvar_result_KMT2A.txt", show_col_types = FALSE)
 # Only keep missense variants with valid protein changes
 clinvar_variants <- clinvar_data %>%
   filter(`Molecular consequence` == "missense variant") %>%
-  filter(str_detect(`Protein change`, "p\\.")) %>%
   mutate(
-    # Extract number from first protein position (e.g. p.Val493Met → 493)
-    PROTEIN_POS = as.numeric(str_extract(`Protein change`, "[0-9]+"))
+    protein_annotation = str_extract(Name, "\\(p\\.[^\\)]+\\)"),
+    PROTEIN_POS = str_extract_all(protein_annotation, "[0-9]+")
   ) %>%
+  unnest(PROTEIN_POS) %>%
+  mutate(PROTEIN_POS = as.numeric(PROTEIN_POS)) %>%
   filter(!is.na(PROTEIN_POS))
+
+
 
 ###############################################################
 # 2) Load InterPro domain annotation
@@ -32,6 +35,7 @@ domains_raw <- read_tsv("entry-matching-Q03164.tsv", show_col_types = FALSE)
 # Extract start and end positions from Match column
 domain_data <- domains_raw %>%
   filter(!is.na(Matches)) %>%
+  separate_rows(Matches, sep = ",") %>%
   mutate(
     Match_Pos = str_extract(Matches, "[0-9]+\\.\\.[0-9]+"),
     Start = as.numeric(str_extract(Match_Pos, "^[0-9]+")),
