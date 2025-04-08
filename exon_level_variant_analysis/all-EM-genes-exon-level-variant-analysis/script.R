@@ -369,44 +369,54 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   
   response <- POST(url = base_url, body = query, encode = "json")
   
-  # Extract JSON response
+  # Check for successful status code and correct content type
+  if (http_type(response) != "application/json") {
+    message("⚠️  Non-JSON response for gene: ", gene, " — skipping.")
+    return(data.frame())
+  }
+
+  # Extract and parse JSON
   response_data <- rawToChar(response$content)
-  parsed_data <- fromJSON(response_data, flatten = TRUE)
-  
-  if (!is.null(parsed_data$data$gene$variants)) {
-    variants <- as.data.frame(parsed_data$data$gene$variants)
-    
-    # Check if 'consequence' column exists
-    if (!"consequence" %in% colnames(variants)) {
-      message("Skipping gene: ", gene, " (no 'consequence' field found)")
-      return(data.frame())  # Return an empty dataframe
+  parsed_data <- tryCatch(
+    fromJSON(response_data, flatten = TRUE),
+    error = function(e) {
+      message("❌ JSON parse error for gene: ", gene)
+      return(NULL)
     }
-    
-    variants <- variants %>%
-      dplyr::filter(consequence == "missense_variant") %>%
-      dplyr::select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
-    
-    # Convert list-type columns to comma-separated strings
-    variants <- variants %>% mutate(across(where(is.list), ~ sapply(., paste, collapse = ",")))
-    
-    # Split 'variant_id' into Chromosome, Position, Reference, and Alternate
-    variants <- variants %>%
-      separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE)
-    
-    # Reorder columns for better readability
-    variants <- variants %>%
-      dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
-    
-    file_name <- paste0("gnomAD_", gene, ".csv")
-    write.csv(variants, file = file_name, row.names = FALSE)
-    
-    message("Saved results to: ", file_name)
-    return(variants)
-  } else {
+  )
+  
+  if (is.null(parsed_data) || is.null(parsed_data$data$gene$variants)) {
     message("No variants found for gene: ", gene)
     return(data.frame())
   }
+
+  # Continue processing
+  variants <- as.data.frame(parsed_data$data$gene$variants)
+
+  if (!"consequence" %in% colnames(variants)) {
+    message("Skipping gene: ", gene, " (no 'consequence' field found)")
+    return(data.frame())
+  }
+
+  variants <- variants %>%
+    dplyr::filter(consequence == "missense_variant") %>%
+    dplyr::select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
+
+  # Convert list columns to strings
+  variants <- variants %>% mutate(across(where(is.list), ~ sapply(., paste, collapse = ",")))
+
+  # Split variant ID
+  variants <- variants %>%
+    separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE) %>%
+    dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
+
+  # Save to file
+  file_name <- paste0("gnomAD_", gene, ".csv")
+  write.csv(variants, file = file_name, row.names = FALSE)
+  message("✅ Saved results to: ", file_name)
+  return(variants)
 }
+
 
 genes <- target_genes
 
@@ -440,14 +450,14 @@ missense_variants_df <- bind_rows(missense_variants_list)
 
 
 
-# Run Fisher test
+# GnomAd missense variant count in each exon 
 
 # Load required libraries
 library(dplyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
 
 # Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
 # Convert exon coordinates to numeric
@@ -559,7 +569,7 @@ if (nrow(final_results) > 0) {
 
 
 
-
+# Fisher test 
 
 library(dplyr)
 library(readr)
