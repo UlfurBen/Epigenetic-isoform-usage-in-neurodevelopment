@@ -16,7 +16,7 @@ library(jsonlite)
 ###############################################################
 ## 1) Parse CHD3 Domain Data from InterPro TSV File
 ###############################################################
-get_chd3_domains_from_tsv <- function(file_path = "entry-matching-Q12873-chd3.tsv") {
+get_chd3_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") {
   df <- read_tsv(file_path, show_col_types = FALSE)
   
   domain_df <- df %>%
@@ -26,14 +26,14 @@ get_chd3_domains_from_tsv <- function(file_path = "entry-matching-Q12873-chd3.ts
     mutate(Start = as.numeric(Start), End = as.numeric(End)) %>%
     arrange(Start)
   
-  write.csv(domain_df, "chd3_domains.csv", row.names = FALSE)
-  message("✅ chd3 domain data saved to: chd3_domains.csv")
+  write.csv(domain_df, "kmt2a_domains.csv", row.names = FALSE)
+  message("✅ kmt2a domain data saved to: chd3_domains.csv")
   
   return(domain_df)
 }
 
 ###############################################################
-## 2) Retrieve gnomAD Missense Variants for chd3
+## 2) Retrieve gnomAD Missense Variants for kmt2a
 ###############################################################
 get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   base_url <- "https://gnomad.broadinstitute.org/api"
@@ -104,8 +104,8 @@ map_variants_to_domains <- function(variants_df, domains_df) {
     domains_df$variant_count[i] <- count
   }
   
-  write.csv(domains_df, "chd3_domain_variant_counts.csv", row.names = FALSE)
-  message("✅ Variant counts per domain saved to: chd3_domain_variant_counts.csv")
+  write.csv(domains_df, "kmt2a_domain_variant_counts.csv", row.names = FALSE)
+  message("✅ Variant counts per domain saved to: kmt2a_domain_variant_counts.csv")
   
   return(domains_df)
 }
@@ -114,7 +114,7 @@ map_variants_to_domains <- function(variants_df, domains_df) {
 ## 5) Run Full Pipeline
 ###############################################################
 retrieve_and_analyze_chd3_data <- function(
-    gene = "chd3",
+    gene = "kmt2a",
     gnomad_dataset = "gnomad_r3",
     domain_tsv = "entry-matching-Q12873-chd3.tsv"
 ) {
