@@ -114,14 +114,14 @@ unique_exons <- exons_joined %>%
   dplyr::filter(n_transcripts == 1)  # Keep only exons unique to a single isoform
 
 # Save all unique exons (both canonical and non-canonical)
-write.csv(unique_exons, "all_exons_canonical_and_noncanonical.csv", row.names = FALSE)
+write.csv(unique_exons, "EM_genes_all_exons_canonical_and_noncanonical.csv", row.names = FALSE)
 
 # Save only canonical unique exons
 canonical_exons_only <- unique_exons %>% filter(isoform_type == "canonical")
-write.csv(canonical_exons_only, "canonical_unique_exons.csv", row.names = FALSE)
+write.csv(canonical_exons_only, "EM_genes_canonical_unique_exons.csv", row.names = FALSE)
 
-cat("✔ All unique exons saved to 'all_exons_canonical_and_noncanonical.csv'\n")
-cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
+cat("✔ All unique exons saved to 'EM_genes_all_exons_canonical_and_noncanonical.csv'\n")
+cat("✔ Canonical unique exons saved to 'EM_genes_canonical_unique_exons.csv'\n")
 
 
 
@@ -181,7 +181,7 @@ extract_clinvar_missense <- function(vcf_file, gene) {
     mutate(CLNSIG = str_extract(INFO, "CLNSIG=[^;]+")) %>%
     mutate(CLNSIG = str_replace(CLNSIG, "CLNSIG=", ""))
 
-   # Keep only pathogenic and likely pathogenic variants
+   # Keep only pathogenic and/or likely pathogenic variants
   gene_variants <- gene_variants %>%
   mutate(CLNSIG_clean = tolower(gsub("[\\s,]+", "_", CLNSIG))) %>%
   filter(CLNSIG_clean %in% c("pathogenic", "likely_pathogenic", "pathogenic/likely_pathogenic"))
@@ -229,7 +229,7 @@ library(dplyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
 
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
@@ -327,10 +327,10 @@ if(nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "exon_clinvar_variant_counts.csv", row.names = FALSE)
-  cat("Exon ClinVar variant counts and densities have been saved to 'exon_clinvar_variant_counts.csv'.\n")
+  write.csv(output, "EM_genes_exon_clinvar_variant_counts.csv", row.names = FALSE)
+  cat("Exon ClinVar variant counts and densities have been saved to 'EM_genes_exon_clinvar_variant_counts.csv'.\n")
 } else {
-  cat("No exons with Pathogenic or Likely Pathogenic variants were found.\n")
+  cat("No exons with Pathogenic and/or Likely Pathogenic variants were found.\n")
 }
 
 
@@ -478,7 +478,7 @@ library(dplyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
+exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
 
 # Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
 # Convert exon coordinates to numeric
@@ -566,8 +566,8 @@ if (nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "exon_gnomad_variant_counts.csv", row.names = FALSE)
-  cat("Exon gnomAD variant counts and densities have been saved to 'exon_gnomad_variant_counts.csv'.\n")
+  write.csv(output, "EM_genes_exon_gnomad_variant_counts.csv", row.names = FALSE)
+  cat("Exon gnomAD variant counts and densities have been saved to 'EM_genes_exon_gnomad_variant_counts.csv'.\n")
 } else {
   cat("No exons with variants were found in the gnomAD files.\n")
 }
@@ -596,9 +596,9 @@ library(dplyr)
 library(readr)
 
 # Load variant counts and exon metadata
-clinvar_df <- read_csv("exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad_df <- read_csv("exon_gnomad_variant_counts.csv", show_col_types = FALSE)
-all_exons <- read_csv("all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
+clinvar_df <- read_csv("EM_genes_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
+gnomad_df <- read_csv("EM_genes_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
+all_exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
 
 # Merge ClinVar and gnomAD counts on exon ID
 merged_variants <- full_join(clinvar_df, gnomad_df,
@@ -653,8 +653,8 @@ fisher_results_limited <- fisher_results %>%
   )
 
 # Save full results (limited columns)
-write_csv(fisher_results_limited, "exon_fisher_enrichment_results.csv")
-cat("✔ Fisher's exact test results saved to 'exon_fisher_enrichment_results.csv'\n")
+write_csv(fisher_results_limited, "EM_genes_exon_fisher_enrichment_results.csv")
+cat("✔ Fisher's exact test results saved to 'EM_genes_exon_fisher_enrichment_results.csv'\n")
 
 # Identify genes with at least one exon showing significant ClinVar enrichment
 significant_genes <- fisher_results_limited %>%
