@@ -7,8 +7,8 @@ library(dplyr)
 library(readr)
 
 # Load inputs
-clinvar <- read_csv("exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad  <- read_csv("exon_gnomad_variant_counts.csv", show_col_types = FALSE)
+clinvar <- read_csv("EM_genes_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
+gnomad  <- read_csv("EM_genes_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
 
 # Merge variant counts on exon coordinates
 merged <- full_join(clinvar, gnomad, 
@@ -23,5 +23,5 @@ merged <- merged %>%
   )
 
 # Save to file
-write_csv(merged, "exon_clinvar_gnomad_ratio_output.csv")
-cat("✔ Saved ClinVar/gnomAD ratio data with constraint scores to 'exon_clinvar_gnomad_ratio_output.csv'\n")
+write_csv(merged, "EM_genes_exon_clinvar_gnomad_ratio_output.csv")
+cat("✔ Saved ClinVar/gnomAD ratio data with constraint scores to 'EM_genes_exon_clinvar_gnomad_ratio_output.csv'\n")
