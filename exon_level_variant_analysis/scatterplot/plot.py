@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # Load the saved CSV
-df = pd.read_csv("exon_clinvar_gnomad_ratio_output.csv")
+df = pd.read_csv("EM_genes_exon_clinvar_gnomad_ratio_output.csv")
 
 # Recompute ratio to be sure
 df["clinvar_gnomad_ratio"] = df["variant_count_clinvar"] / (df["variant_count_gnomad"] + 1e-6)
@@ -41,5 +41,5 @@ plt.grid(True)
 plt.tight_layout()
 
 # Save and show
-plt.savefig("clinvar_gnomad_ratio_top10.png", dpi=300)
+plt.savefig("EM_genes_clinvar_gnomad_ratio_top10.png", dpi=300)
 plt.show()
