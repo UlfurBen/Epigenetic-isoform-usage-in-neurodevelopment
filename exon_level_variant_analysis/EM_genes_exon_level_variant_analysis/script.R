@@ -229,7 +229,7 @@ library(dplyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv")
 
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
@@ -253,7 +253,7 @@ for(g in target_genes) {
   }
   
   # Read the variant file
-  variants <- read_csv(variant_file, stringsAsFactors = FALSE, header = TRUE)
+  variants <- read_csv(variant_file)
   
   # Clean up column names: trim any leading/trailing whitespace
   colnames(variants) <- trimws(colnames(variants))
