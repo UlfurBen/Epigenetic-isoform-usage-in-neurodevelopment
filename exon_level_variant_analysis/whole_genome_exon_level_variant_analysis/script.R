@@ -206,7 +206,7 @@ library(tidyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv")
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
@@ -234,7 +234,7 @@ for(g in target_genes) {
   }
   
   # Read the variant file
-  variants <- read_csv(variant_file, stringsAsFactors = FALSE, header = TRUE)
+  variants <- read_csv(variant_file)
   
   # Clean up column names: trim any leading/trailing whitespace
   colnames(variants) <- trimws(colnames(variants))
@@ -447,7 +447,7 @@ library(tidyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", stringsAsFactors = FALSE)
+exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv")
 
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
