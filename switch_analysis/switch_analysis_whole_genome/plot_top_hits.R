@@ -5,7 +5,7 @@ library(tidyr)
 library(gridExtra)
 
 # 2) Read the Isoform Expression Data -----------------------------------
-isoform_data <- read.csv("~/downloads/top_hits_whole_genome_significant_isoform_upregulation_by_day.csv", header = TRUE)
+isoform_data <- read.csv("~/downloads/whole_genome_significant_isoform_upregulation_by_day.csv", header = TRUE)
 
 # 3) Define Top Significant Isoforms -----------------------------------
 top_isoforms <- c("ENSMUST00000037206", "ENSMUST00000043739", "ENSMUST00000097952", "ENSMUST00000121983", "ENSMUST00000123283",
