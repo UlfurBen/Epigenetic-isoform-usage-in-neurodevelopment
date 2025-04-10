@@ -1,5 +1,5 @@
 ###############################################################################
-# COMBINED SCRIPT: Lollipop Plot of Missense Variants with InterPro Domains
+# COMBINED SCRIPT: Lollipop Plot of Missense Variants with Pfam Domains (labeled)
 ###############################################################################
 
 # Load libraries
@@ -31,13 +31,13 @@ clinvar_counts <- clinvar_for_plot %>%
   summarise(Count = n(), .groups = "drop")
 
 ###############################################################################
-# 2) Load and process InterPro domain annotation
+# 2) Load and process Pfam-only domain annotations
 ###############################################################################
 
 domains_raw <- read_tsv("entry-matching-Q03164.tsv", show_col_types = FALSE)
 
 domain_data <- domains_raw %>%
-  filter(!is.na(Matches)) %>%
+  filter(`Source Database` == "pfam", !is.na(Matches)) %>%
   separate_rows(Matches, sep = ",") %>%
   mutate(
     Match_Pos = str_extract(Matches, "[0-9]+\\.\\.[0-9]+"),
@@ -53,6 +53,7 @@ domain_data <- domains_raw %>%
 
 # Set height for domain rectangles below x-axis
 domain_height <- max(clinvar_counts$Count, na.rm = TRUE) * 0.2
+label_offset <- domain_height * 0.6  # extra space for lower label placement
 
 # Custom theme
 custom_theme <- theme_minimal() +
@@ -66,13 +67,24 @@ custom_theme <- theme_minimal() +
 # Combine everything in one plot
 plot_lollipop <- ggplot() +
   
-  # Domain boxes
+  # Domain rectangles (Pfam only)
   geom_rect(
     data = domain_data,
     aes(xmin = Start, xmax = End, ymin = -domain_height, ymax = 0),
     fill = "gray70",
     color = "black",
     alpha = 0.4,
+    inherit.aes = FALSE
+  ) +
+  
+  # Domain labels angled below the rectangles, centered and lowered
+  geom_text(
+    data = domain_data,
+    aes(x = (Start + End) / 2, y = -domain_height - label_offset, label = Name),
+    size = 3,
+    angle = 45,
+    hjust = 0.5,
+    vjust = 0,
     inherit.aes = FALSE
   ) +
   
@@ -92,13 +104,18 @@ plot_lollipop <- ggplot() +
   ) +
   
   scale_x_continuous("Amino Acid Position", expand = c(0, 0)) +
-  scale_y_continuous("Number of Variants", limits = c(-domain_height, max(clinvar_counts$Count) + 1), expand = c(0, 0)) +
-  ggtitle("ClinVar Missense Variants in KMT2A") +
+  scale_y_continuous(
+    "Number of Variants",
+    limits = c(-domain_height - label_offset * 2.5, max(clinvar_counts$Count) + 1),
+    expand = c(0, 0)
+  ) +
+  ggtitle("ClinVar Missense Variants in KMT2A (Pfam Domains Only)") +
   custom_theme
+
 
 ###############################################################################
 # 4) Save plot
 ###############################################################################
 
-ggsave("lollipop_ClinVar_kmt2a.png", plot_lollipop, width = 10, height = 4, dpi = 300)
-message("✅ Lollipop plot with domains saved as: lollipop_ClinVar_kmt2a.png")
+ggsave("lollipop_ClinVar_KMT2A_Pfam_labeled.png", plot_lollipop, width = 12, height = 4.5, dpi = 300)
+message("✅ Lollipop plot with Pfam domain names saved as: lollipop_ClinVar_KMT2A_Pfam_labeled.png")
