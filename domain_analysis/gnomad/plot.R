@@ -1,5 +1,5 @@
 ###############################################################################
-# COMBINED SCRIPT: gnomAD Missense Variants Lollipop Plot with InterPro Domains
+# COMBINED SCRIPT: gnomAD Missense Variants Lollipop Plot with Pfam Domains (labeled)
 ###############################################################################
 
 # Load required libraries
@@ -12,20 +12,20 @@ library(jsonlite)
 library(ggplot2)
 
 ###############################################################################
-# 1) Helper: Load and Parse InterPro Domain TSV (if exists)
+# 1) Helper: Load and Parse Pfam Domain TSV
 ###############################################################################
 
-get_kmt2a_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") {
+get_pfam_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") {
   if (!file.exists(file_path)) {
     stop("❌ Domain file not found: ", file_path)
   }
   
-  message("✅ Domain file found, processing...")
+  message("✅ Domain file found, extracting Pfam domains...")
   
   df <- read_tsv(file_path, show_col_types = FALSE)
   
   domain_df <- df %>%
-    filter(!is.na(Matches)) %>%
+    filter(`Source Database` == "pfam", !is.na(Matches)) %>%
     separate_rows(Matches, sep = ",") %>%
     mutate(
       Match_Pos = str_extract(Matches, "[0-9]+\\.\\.[0-9]+"),
@@ -35,8 +35,8 @@ get_kmt2a_domains_from_tsv <- function(file_path = "entry-matching-Q03164.tsv") 
     select(Name, Type, Start, End) %>%
     arrange(Start)
   
-  write_csv(domain_df, "kmt2a_domains.csv")
-  message("✅ Parsed domain data saved to: kmt2a_domains.csv")
+  write_csv(domain_df, "kmt2a_pfam_domains.csv")
+  message("✅ Parsed Pfam domain data saved to: kmt2a_pfam_domains.csv")
   return(domain_df)
 }
 
@@ -90,7 +90,6 @@ extract_protein_position <- function(hgvsp_col) {
   as.numeric(str_extract(pos_str, "[0-9]+"))
 }
 
-
 ###############################################################################
 # 4) Main Execution Pipeline
 ###############################################################################
@@ -100,8 +99,8 @@ run_gnomad_lollipop_pipeline <- function(
     gnomad_dataset = "gnomad_r3",
     domain_tsv = "entry-matching-Q03164.tsv"
 ) {
-  # Load domain data
-  domains_df <- get_kmt2a_domains_from_tsv(domain_tsv)
+  # Load domain data (Pfam only)
+  domain_data <- get_pfam_domains_from_tsv(domain_tsv)
   
   # Fetch gnomAD missense variants
   variants_df <- get_missense_variants_gnomad(gene, gnomad_dataset)
@@ -114,24 +113,37 @@ run_gnomad_lollipop_pipeline <- function(
     mutate(PROTEIN_POS = extract_protein_position(hgvsp)) %>%
     filter(!is.na(PROTEIN_POS))
   
-  # Count variants at each position
+  # Count variants per protein position
   variant_counts <- variants_df %>%
     group_by(PROTEIN_POS) %>%
     summarise(Count = n(), .groups = "drop")
   
-  # Determine height for domain bars
+  # Set heights for plotting
   domain_height <- max(variant_counts$Count, na.rm = TRUE) * 0.2
+  label_offset <- domain_height * 0.6
   
-  # Plot lollipop
+  # Build plot
   plot <- ggplot() +
     
-    # Add domain boxes (gray, no legend)
+    # Pfam domain rectangles
     geom_rect(
-      data = domains_df,
+      data = domain_data,
       aes(xmin = Start, xmax = End, ymin = -domain_height, ymax = 0),
       fill = "gray70",
+      color = "black",
       alpha = 0.4,
-      color = "black"
+      inherit.aes = FALSE
+    ) +
+    
+    # Domain name labels (angled below boxes)
+    geom_text(
+      data = domain_data,
+      aes(x = (Start + End) / 2, y = -domain_height - label_offset, label = Name),
+      size = 3,
+      angle = 45,
+      hjust = 0.5,
+      vjust = 0,
+      inherit.aes = FALSE
     ) +
     
     # Lollipop stems
@@ -150,8 +162,12 @@ run_gnomad_lollipop_pipeline <- function(
     ) +
     
     scale_x_continuous("Amino Acid Position", expand = c(0, 0)) +
-    scale_y_continuous("Number of Variants", limits = c(-domain_height, max(variant_counts$Count) + 1)) +
-    ggtitle(paste("gnomAD Missense Variants in", gene)) +
+    scale_y_continuous(
+      "Number of Variants",
+      limits = c(-domain_height - label_offset * 2.5, max(variant_counts$Count) + 1),
+      expand = c(0, 0)
+    ) +
+    ggtitle(paste("gnomAD Missense Variants in", gene, "(Pfam Domains Only)")) +
     theme_minimal() +
     theme(
       axis.text.x = element_text(angle = 45, hjust = 1),
@@ -161,8 +177,9 @@ run_gnomad_lollipop_pipeline <- function(
       legend.position = "none"
     )
   
-  ggsave("lollipop_gnomAD_kmt2a.png", plot, width = 10, height = 4, dpi = 300)
-  message("✅ Lollipop plot saved to: lollipop_gnomAD_kmt2a.png")
+  # Save plot
+  ggsave("lollipop_gnomAD_KMT2A_Pfam_labeled.png", plot, width = 12, height = 4.5, dpi = 300)
+  message("✅ Lollipop plot with Pfam domain names saved as: lollipop_gnomAD_KMT2A_Pfam_labeled.png")
 }
 
 ###############################################################################
