@@ -17,10 +17,7 @@ library(tidyr)
 library(broom)
 
 # 2) Define Gene List --------------------------------------------------
-gene_list <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
-  pivot_longer(cols = everything(), values_to = "gene") %>%
-  pull(gene) %>%
-  tolower()
+gene_list <- read_lines("gene_symbols.csv")
 
 # 3) File Paths to HPC Data (Adapt as needed) ---------------------------
 gtf_path   <- "/proj/hpcdata/Mimir/shared/From_Katrin_For_Kaan/km125_Perturbseq/genomes/Mus_musculus.GRCm38.98.gtf.gz"
