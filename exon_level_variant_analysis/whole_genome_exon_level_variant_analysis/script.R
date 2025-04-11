@@ -22,9 +22,7 @@ ensembl_mart <- useEnsembl(biomart = "ensembl",
 # there the human gene dataset was chosen and Attributes selected were "Gene name" and under Filters
 # there under Gene type "protein_coding" was chosen then the resulting file contained 23258 genes and
 # the result was saved to .csv file
-target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
-  pivot_longer(cols = everything(), values_to = "gene") %>%
-  pull(gene)
+target_genes <- read_lines("gene_symbols.csv")
 
 # Retrieve Ensembl Gene IDs for target genes using external_gene_name
 gene_info <- getBM(
@@ -174,9 +172,7 @@ extract_clinvar_missense <- function(vcf_file, gene) {
 
 # Define input VCF file and read gene list
 vcf_file <- "clinvar.vcf"
-genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
-  pivot_longer(cols = everything(), values_to = "gene") %>%
-  pull(gene)
+genes <- read_lines("gene_symbols.csv")
 
 # Process each gene
 gene_results <- lapply(genes, function(gene) extract_clinvar_missense(vcf_file, gene))
@@ -210,9 +206,7 @@ library(readr)  # For read_csv/read_delim
 # ---- 1. Read Exon Data (already contains necessary columns) ----
 exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv")
 
-target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
-  pivot_longer(cols = everything(), values_to = "gene") %>%
-  pull(gene)
+target_genes <- read_lines("gene_symbols.csv")
 
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
@@ -330,7 +324,7 @@ if(nrow(final_results) > 0) {
 
 
 
-
+# Get gnomAD missense variants
                        
 library(httr)
 library(jsonlite)
@@ -398,7 +392,7 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
     
   variants <- variants %>%
     filter(consequence == "missense_variant") %>%
-    select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
+    dplyr::select(variant_id, transcript_id, hgvsc, hgvsp, rsids)
     
   # Convert list-type columns to comma-separated strings
   variants <- variants %>%
@@ -407,7 +401,7 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
   # Split variant ID
   variants <- variants %>%
     separate(variant_id, into = c("Chromosome", "Position", "Reference", "Alternate"), sep = "-", remove = FALSE) %>%
-    select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
+    dplyr::select(Chromosome, Position, Reference, Alternate, transcript_id, hgvsc, hgvsp, rsids, variant_id)
 
   # Save to file
   write.csv(variants, file = file_name, row.names = FALSE)
@@ -416,9 +410,7 @@ get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
 }
 
 # Read gene list
-genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
-  pivot_longer(cols = everything(), values_to = "gene") %>%
-  pull(gene)
+genes <- read_lines("gene_symbols.csv")
 
 # Fetch missense variants for each gene, skipping existing files
 missense_variants_list <- lapply(genes, get_missense_variants_gnomad)
@@ -451,9 +443,7 @@ library(readr)  # For read_csv
 # ---- 1. Read Exon Data (already contains necessary columns) ----
 exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv")
 
-target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
-  pivot_longer(cols = everything(), values_to = "gene") %>%
-  pull(gene)
+target_genes <- read_lines("gene_symbols.csv")
 
 # Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
 # Convert exon coordinates to numeric
