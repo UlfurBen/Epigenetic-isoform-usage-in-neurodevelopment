@@ -33,9 +33,9 @@ day6_counts  <- read.delim(day6_file, header=TRUE)
 day12_counts <- read.delim(day12_file, header=TRUE)
 
 # 5) Filter Data to Include Only Selected Genes (Case Insensitive) ------
-day3_counts  <- day3_counts %>% filter(tolower(gene_name) %in% gene_list)
-day6_counts  <- day6_counts %>% filter(tolower(gene_name) %in% gene_list)
-day12_counts <- day12_counts %>% filter(tolower(gene_name) %in% gene_list)
+day3_counts  <- day3_counts %>% filter(tolower(gene_name) %in% tolower(gene_list))
+day6_counts  <- day6_counts %>% filter(tolower(gene_name) %in% tolower(gene_list))
+day12_counts <- day12_counts %>% filter(tolower(gene_name) %in% tolower(gene_list))
 
 # 6) Rename feature_id -> isoform_id if present -------------------------
 for(df_name in c("day3_counts","day6_counts","day12_counts")) {
