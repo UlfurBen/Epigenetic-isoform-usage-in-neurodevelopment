@@ -719,8 +719,8 @@ fisher_results_per_gene <- fisher_results_per_gene %>%
 
 # Filter significant genes and sort by enrichment ratio
 significant_genes <- fisher_results_per_gene %>%
-  filter(fdr < 0.05) %>%                # 🟥 Keep only genes with significant enrichment
-  arrange(desc(enrichment_ratio))       # 🟥 Sort descending by enrichment
+  filter(fdr < 0.05) %>%                # Keep only genes with significant enrichment
+  arrange(desc(enrichment_ratio))       # Sort descending by enrichment
 
 # Save sorted significant genes
 write_csv(significant_genes, "significant_enriched_genes_sorted.csv")  
