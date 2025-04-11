@@ -709,13 +709,13 @@ fisher_results_per_gene <- fisher_results_per_gene %>%
     fdr = p.adjust(fisher_p, method = "fdr")
   )
 
-# Add enrichment ratio
-fisher_results_per_gene <- fisher_results_per_gene %>%
-  mutate(
-    clinvar_ratio = clinvar_non_canonical / (clinvar_non_canonical + clinvar_canonical + 1e-6),
-    gnomad_ratio  = gnomad_non_canonical / (gnomad_non_canonical + gnomad_canonical + 1e-6),
-    enrichment_ratio = clinvar_ratio / gnomad_ratio
-  )
+# Optional: Add enrichment ratio
+# fisher_results_per_gene <- fisher_results_per_gene %>%
+#  mutate(
+#    clinvar_ratio = clinvar_non_canonical / (clinvar_non_canonical + clinvar_canonical + 1e-6),
+#    gnomad_ratio  = gnomad_non_canonical / (gnomad_non_canonical + gnomad_canonical + 1e-6),
+#    enrichment_ratio = clinvar_ratio / gnomad_ratio
+#  )
 
 # Save output
 write_csv(fisher_results_per_gene, "whole_genome_per_gene_fisher_results.csv")
