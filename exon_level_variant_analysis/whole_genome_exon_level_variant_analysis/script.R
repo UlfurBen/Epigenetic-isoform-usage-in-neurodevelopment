@@ -18,8 +18,10 @@ ensembl_mart <- useEnsembl(biomart = "ensembl",
 # print(gene_attrs)
 
 # Define the list of target genes (using their external gene names)
-# gene_symbols.csv was created by downloading all gene symbols from https://www.genenames.org/download/custom/?utm_source=chatgpt.com
-# and then using R to save first column values to csv file with quotes around each gene symbol.
+# gene_symbols.csv was created by downloading all gene symbols https://www.ensembl.org/biomart/martview/
+# there the human gene dataset was chosen and Attributes selected were "Gene name" and under Filters
+# there under Gene type "protein_coding" was chosen then the resulting file contained 23258 genes and
+# the result was saved to .csv file
 target_genes <- read_csv("gene_symbols.csv", col_names = FALSE, show_col_types = FALSE) %>%
   pivot_longer(cols = everything(), values_to = "gene") %>%
   pull(gene)
