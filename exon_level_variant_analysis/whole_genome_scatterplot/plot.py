@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 # Load the CSV
-df = pd.read_csv("whole_genome_exon_clinvar_gnomad_ratio_output.csv")
+df = pd.read_csv("whole_genome_exon_clinvar_gnomad_ratio_output.csv", low_memory=False)
+
+# Filter out mitochondrial DNA (MT)
+df = df[df["exon_chr"].isin([str(i) for i in range(1, 23)] + ['X', 'Y'])].copy()
 
 # Recompute ratio
 df["clinvar_gnomad_ratio"] = df["variant_count_clinvar"] / (df["variant_count_gnomad"] + 1e-6)
