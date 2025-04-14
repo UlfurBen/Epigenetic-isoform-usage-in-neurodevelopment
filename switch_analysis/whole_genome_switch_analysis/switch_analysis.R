@@ -130,18 +130,14 @@ anova_results <- long_df %>%
   group_modify(~get_dominant_day(.x)) %>%
   ungroup()
 
+# 12.5) Adjust p-values for multiple testing using FDR ------------------
+anova_results <- anova_results %>%
+  mutate(fdr = p.adjust(p_value, method = "fdr"))
+
 # 13) Save the results --------------------------------------------------
-write.csv(anova_results, "whole_genome_significant_isoform_upregulation_by_day.csv", row.names = FALSE)
+write.csv(anova_results, "whole_genome_significant_isoform_upregulation_by_day_fdr.csv", row.names = FALSE)
 
-# Print top hits
-top_hits <- anova_results %>%
-  filter(!is.na(best_day)) %>%
-  arrange(p_value) %>%
-  head(10)
+significant_isoforms <- anova_results %>%
+  filter(!is.na(best_day), fdr < 0.05)
 
-print("Top significantly upregulated isoforms:")
-print(top_hits)
-
-write.csv(top_hits, "top_hits_whole_genome_significant_isoform_upregulation_by_day.csv", row.names = FALSE)
-
-                    
+write.csv(significant_isoforms, "significant_isoforms_fdr_below_0.05_switch_analysis.csv", row.names = FALSE)
