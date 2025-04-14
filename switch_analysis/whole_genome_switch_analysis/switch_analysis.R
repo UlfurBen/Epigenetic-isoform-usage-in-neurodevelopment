@@ -141,3 +141,11 @@ significant_isoforms <- anova_results %>%
   filter(!is.na(best_day), fdr < 0.05)
 
 write.csv(significant_isoforms, "significant_isoforms_fdr_below_0.05_switch_analysis.csv", row.names = FALSE)
+
+# 14) optional, print the top 10 most significantly expressed isoforms 
+top_hits <- significant_isoforms %>%
+  arrange(fdr) %>%
+  head(10)
+
+print("Top significantly upregulated isoforms (FDR < 0.05):")
+print(top_hits)
