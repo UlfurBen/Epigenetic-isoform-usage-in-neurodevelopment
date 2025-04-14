@@ -150,14 +150,14 @@ run_gnomad_lollipop_pipeline <- function(
     geom_segment(
       data = variant_counts,
       aes(x = PROTEIN_POS, xend = PROTEIN_POS, y = 0, yend = Count),
-      color = "black"
+      color = "firebrick"
     ) +
     
     # Lollipop heads
     geom_point(
       data = variant_counts,
       aes(x = PROTEIN_POS, y = Count),
-      color = "black",
+      color = "firebrick",
       size = 3
     ) +
     
