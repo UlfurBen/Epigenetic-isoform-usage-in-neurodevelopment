@@ -621,7 +621,7 @@ cat("✔ Fisher's exact test results saved to 'whole_genome_exon_fisher_enrichme
 # Identify genes with at least one exon showing significant ClinVar enrichment
 significant_genes <- fisher_results_limited %>%
   filter(fdr < 0.05) %>%
-  distinct(gene)
+  distinct(gene, ensembl_exon_id, isoform_type)
 
 # Count how many unique genes
 cat("✔ Number of genes with at least one exon significantly enriched (FDR < 0.05):", nrow(significant_genes), "\n")
