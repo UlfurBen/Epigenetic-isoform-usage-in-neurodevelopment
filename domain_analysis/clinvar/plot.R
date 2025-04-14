@@ -10,10 +10,10 @@ library(tidyr)
 library(ggplot2)
 
 ###############################################################################
-# 1) Load and parse ClinVar file
+# 1) Load and parse ClinVar file from clinvar website and check boxes for Likely pathogenic and Pathogenic
 ###############################################################################
 
-clinvar_raw <- read_tsv("clinvar_result_KMT2A.txt", show_col_types = FALSE)
+clinvar_raw <- read_tsv("clinvar_result_GABRG2.txt", show_col_types = FALSE)
 
 clinvar_for_plot <- clinvar_raw %>%
   filter(`Molecular consequence` == "missense variant") %>%
@@ -34,7 +34,7 @@ clinvar_counts <- clinvar_for_plot %>%
 # 2) Load and process Pfam-only domain annotations
 ###############################################################################
 
-domains_raw <- read_tsv("entry-matching-Q03164.tsv", show_col_types = FALSE)
+domains_raw <- read_tsv("entry-matching-P18507.tsv", show_col_types = FALSE)
 
 domain_data <- domains_raw %>%
   filter(`Source Database` == "pfam", !is.na(Matches)) %>%
@@ -44,7 +44,7 @@ domain_data <- domains_raw %>%
     Start = as.numeric(str_extract(Match_Pos, "^[0-9]+")),
     End = as.numeric(str_extract(Match_Pos, "[0-9]+$"))
   ) %>%
-  select(Name, Type, Start, End) %>%
+  dplyr::select(Name, Type, Start, End) %>%
   arrange(Start)
 
 ###############################################################################
@@ -117,5 +117,5 @@ plot_lollipop <- ggplot() +
 # 4) Save plot
 ###############################################################################
 
-ggsave("lollipop_ClinVar_KMT2A_Pfam_labeled.png", plot_lollipop, width = 12, height = 4.5, dpi = 300)
-message("✅ Lollipop plot with Pfam domain names saved as: lollipop_ClinVar_KMT2A_Pfam_labeled.png")
+ggsave("lollipop_ClinVar_GABRG2_Pfam_labeled.png", plot_lollipop, width = 12, height = 4.5, dpi = 300)
+message("✅ Lollipop plot with Pfam domain names saved as: lollipop_ClinVar_GABRG2_Pfam_labeled.png")
