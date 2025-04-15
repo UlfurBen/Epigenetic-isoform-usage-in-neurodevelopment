@@ -15,7 +15,7 @@ library(ggplot2)
 # 1) Helper: Load and Parse Pfam Domain TSV
 ###############################################################################
 
-get_pfam_domains_from_tsv <- function(file_path = "entry-matching-Q12873.tsv") {
+get_pfam_domains_from_tsv <- function(file_path = "entry-matching-P18507.tsv") {
   if (!file.exists(file_path)) {
     stop("❌ Domain file not found: ", file_path)
   }
@@ -35,13 +35,13 @@ get_pfam_domains_from_tsv <- function(file_path = "entry-matching-Q12873.tsv") {
     dplyr::select(Name, Type, Start, End) %>%
     arrange(Start)
   
-  write_csv(domain_df, "CHD3_pfam_domains.csv")
-  message("✅ Parsed Pfam domain data saved to: CHD3_pfam_domains.csv")
+  write_csv(domain_df, "GABRG2_pfam_domains.csv")
+  message("✅ Parsed Pfam domain data saved to: GABRG2_pfam_domains.csv")
   return(domain_df)
 }
 
 ###############################################################################
-# 2) Fetch gnomAD missense variants for CHD3
+# 2) Fetch gnomAD missense variants for GABRG2
 ###############################################################################
 
 get_missense_variants_gnomad <- function(gene, dataset = "gnomad_r3") {
@@ -95,7 +95,7 @@ extract_protein_position <- function(hgvsp_col) {
 ###############################################################################
 
 run_gnomad_lollipop_pipeline <- function(
-    gene = "CHD3",
+    gene = "GABRG2",
     gnomad_dataset = "gnomad_r3",
     domain_tsv = "entry-matching-P18507.tsv"
 ) {
@@ -105,8 +105,8 @@ run_gnomad_lollipop_pipeline <- function(
   # Fetch gnomAD missense variants
   variants_df <- get_missense_variants_gnomad(gene, gnomad_dataset)
   
-  write_csv(variants_df, "CHD3_gnomad_variants.csv")
-  message("✅ Raw gnomAD variants saved to: CHD3_gnomad_variants.csv")
+  write_csv(variants_df, "GABRG2_gnomad_variants.csv")
+  message("✅ Raw gnomAD variants saved to: GABRG2_gnomad_variants.csv")
   
   # Extract protein positions
   variants_df <- variants_df %>%
@@ -178,8 +178,8 @@ run_gnomad_lollipop_pipeline <- function(
     )
   
   # Save plot
-  ggsave("lollipop_gnomAD_CHD3_Pfam_labeled.png", plot, width = 12, height = 4.5, dpi = 300)
-  message("✅ Lollipop plot with Pfam domain names saved as: lollipop_gnomAD_CHD3_Pfam_labeled.png")
+  ggsave("lollipop_gnomAD_GABRG2_Pfam_labeled.png", plot, width = 12, height = 4.5, dpi = 300)
+  message("✅ Lollipop plot with Pfam domain names saved as: lollipop_gnomAD_GABRG2_Pfam_labeled.png")
 }
 
 ###############################################################################
