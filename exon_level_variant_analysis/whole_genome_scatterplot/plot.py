@@ -20,7 +20,7 @@ df_sorted = df.sort_values(by=["exon_chr_numeric", "exon_start"]).reset_index(dr
 # Assign color based on isoform type
 df_sorted["color"] = df_sorted["isoform_type"].map({
   "canonical": "black",
-  "non_canonical": "teal"
+  "non_canonical": "#4169E1" # Royal Blue
 })
 
 # Plot
@@ -34,7 +34,7 @@ plt.scatter(
 )
 
 # Add reference line at y = 1
-plt.axhline(1.0, color='teal', linestyle='--', label="ClinVar = gnomAD")
+plt.axhline(1.0, color='blue', linestyle='--', label="ClinVar = gnomAD")
 
 # Log scale y-axis
 plt.yscale("log")
@@ -61,7 +61,7 @@ plt.grid(True, which="both", axis='y', linestyle='--', alpha=0.5)
 
 # Add custom legend manually
 plt.scatter([], [], c="black", label="Canonical exons")
-plt.scatter([], [], c="teal", label="Non-canonical exons")
+plt.scatter([], [], c="#4169E1", label="Non-canonical exons (Royal Blue)")
 plt.legend()
 
 plt.tight_layout(pad=3.0)
