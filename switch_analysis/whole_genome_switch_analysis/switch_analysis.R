@@ -140,7 +140,7 @@ write.csv(anova_results, "whole_genome_significant_isoform_upregulation_by_day_f
 significant_isoforms <- anova_results %>%
   filter(!is.na(best_day), fdr < 0.05)
 
-write.csv(significant_isoforms, "significant_isoforms_fdr_below_0.05_switch_analysis.csv", row.names = FALSE)
+write.csv(significant_isoforms, "whole_genome_significant_isoforms_fdr_below_0.05_switch_analysis.csv", row.names = FALSE)
 
 # 14) optional, print the top 10 most significantly expressed isoforms 
 top_hits <- significant_isoforms %>%
