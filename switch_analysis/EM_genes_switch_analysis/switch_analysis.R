@@ -1,7 +1,5 @@
 ###############################################################
-# R SCRIPT EXAMPLE: Merge Day3, Day6, Day12 with 
-# multiple replicates and run IsoformSwitchAnalyzeR 
-# using MOUSE GTF & FASTA from HPC cluster, filtering for specific genes
+# R SCRIPT: EM Genes Isoform Expression Analysis with FDR
 ###############################################################
 
 # 1) Load or Install Packages -------------------------------------------
@@ -13,8 +11,10 @@ if(!requireNamespace("IsoformSwitchAnalyzeR", quietly=TRUE)) {
 }
 library(IsoformSwitchAnalyzeR)
 library(dplyr)
+library(tidyr)
+library(broom)
 
-# 2) Define Gene List --------------------------------------------------
+# 2) Define EM Gene List ------------------------------------------------
 gene_list <- tolower(c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
                        "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
                        "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
@@ -24,7 +24,7 @@ gene_list <- tolower(c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASX
                        "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
                        "HDAC1", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7", "HDAC8", "HDAC9", "HDGF"))
 
-# 3) File Paths to HPC Data (Adapt as needed) ---------------------------
+# 3) File Paths to HPC Data ---------------------------------------------
 gtf_path   <- "/proj/hpcdata/Mimir/shared/From_Katrin_For_Kaan/km125_Perturbseq/genomes/Mus_musculus.GRCm38.98.gtf.gz"
 cdna_path  <- "/proj/hpcdata/Mimir/shared/kmoller/km127_RNAseq/Mus_musculus.GRCm38.cdna.all.fa.gz"
 
@@ -32,26 +32,26 @@ day3_file  <- "unfiltered_transcript_counts_with_genes_day3.tsv"
 day6_file  <- "unfiltered_transcript_counts_with_genes_day6.tsv"
 day12_file <- "unfiltered_transcript_counts_with_genes_day12.tsv"
 
-# 4) Read Each Day's File Without Summation -----------------------------
+# 4) Read Counts --------------------------------------------------------
 day3_counts  <- read.delim(day3_file, header=TRUE)
 day6_counts  <- read.delim(day6_file, header=TRUE)
 day12_counts <- read.delim(day12_file, header=TRUE)
 
-# 5) Filter Data to Include Only Selected Genes (Case Insensitive) ------
+# 5) Filter for EM Genes ------------------------------------------------
 day3_counts  <- day3_counts %>% filter(tolower(gene_name) %in% gene_list)
 day6_counts  <- day6_counts %>% filter(tolower(gene_name) %in% gene_list)
 day12_counts <- day12_counts %>% filter(tolower(gene_name) %in% gene_list)
 
-# 6) Rename feature_id -> isoform_id if present -------------------------
-for(df_name in c("day3_counts","day6_counts","day12_counts")) {
+# 6) Rename Columns if Needed -------------------------------------------
+for(df_name in c("day3_counts", "day6_counts", "day12_counts")) {
   tmp <- get(df_name)
-  if("feature_id" %in% colnames(tmp)) {
+  if ("feature_id" %in% colnames(tmp)) {
     names(tmp)[names(tmp) == "feature_id"] <- "isoform_id"
   }
   assign(df_name, tmp)
 }
 
-# 7) Merge All Days by isoform_id ---------------------------------------
+# 7) Merge All Time Points ----------------------------------------------
 day3_sub <- day3_counts %>% dplyr::select(isoform_id, gene_name, matches("Day3_"))
 day6_sub <- day6_counts %>% dplyr::select(isoform_id, gene_name, matches("Day6_"))
 day12_sub <- day12_counts %>% dplyr::select(isoform_id, gene_name, matches("Day12_"))
@@ -59,29 +59,18 @@ day12_sub <- day12_counts %>% dplyr::select(isoform_id, gene_name, matches("Day1
 merged_3_6  <- merge(day3_sub, day6_sub,  by=c("isoform_id", "gene_name"), all=TRUE)
 all_3_6_12  <- merge(merged_3_6, day12_sub, by=c("isoform_id", "gene_name"), all=TRUE)
 
-# 8) Convert replicate columns to numeric and Remove NA Rows -------------
+# 8) Clean Numeric Values -----------------------------------------------
 rep_cols <- setdiff(colnames(all_3_6_12), c("isoform_id", "gene_name"))
-for(col_name in rep_cols) {
+for (col_name in rep_cols) {
   all_3_6_12[[col_name]] <- as.numeric(all_3_6_12[[col_name]])
 }
 all_3_6_12 <- all_3_6_12 %>% drop_na()
 
-# 9) Save Processed Data for Plotting -----------------------------------
-write.csv(all_3_6_12, "isoform_expression_levels.csv", row.names = FALSE)
+# 9) Save Intermediate Table --------------------------------------------
+write.csv(all_3_6_12, "em_isoform_expression_levels.csv", row.names = FALSE)
+print("✅ EM isoform expression levels saved.")
 
-# Print Summary ----------------------------------------------------------
-print("Isoform expression levels saved for plotting.")
-
-###############################################################
-# ADDITIONAL SECTION:
-# Run ANOVA + Tukey's HSD per isoform to detect significantly 
-# upregulated day (Day3, Day6, or Day12) based on expression
-###############################################################
-
-library(tidyr)
-library(broom)
-
-# 10) Reshape to long format ---------------------------------------------
+# 10) Reshape to Long Format --------------------------------------------
 long_df <- all_3_6_12 %>%
   pivot_longer(cols = -c(isoform_id, gene_name),
                names_to = "sample",
@@ -96,19 +85,15 @@ long_df <- all_3_6_12 %>%
   ) %>%
   filter(!is.na(day), !is.na(expression))
 
-# 11) Define a function to run ANOVA and TukeyHSD -----------------------
+# 11) ANOVA + Tukey Function --------------------------------------------
 get_dominant_day <- function(df) {
-  # Coerce day and expression to basic types
-  df <- df %>%
-    mutate(day = as.character(day),
-           expression = as.numeric(expression)) %>%
+  df <- df %>% mutate(day = as.character(day), expression = as.numeric(expression)) %>%
     filter(!is.na(expression))
 
   if (length(unique(df$day)) < 2) {
     return(data.frame(best_day = NA, p_value = NA))
   }
 
-  # Run ANOVA safely
   model <- tryCatch(aov(expression ~ day, data = df), error = function(e) return(NULL))
   if (is.null(model)) return(data.frame(best_day = NA, p_value = NA))
 
@@ -117,11 +102,8 @@ get_dominant_day <- function(df) {
 
   results <- as.data.frame(tukey$day)
   results$comparison <- rownames(results)
-
   sig_results <- results %>% filter(`p adj` < 0.05)
-  if (nrow(sig_results) == 0) {
-    return(data.frame(best_day = NA, p_value = NA))
-  }
+  if (nrow(sig_results) == 0) return(data.frame(best_day = NA, p_value = NA))
 
   avg_expr <- df %>% group_by(day) %>%
     summarise(mean_expr = mean(expression, na.rm = TRUE)) %>%
@@ -131,21 +113,27 @@ get_dominant_day <- function(df) {
   return(data.frame(best_day = avg_expr$day, p_value = min(sig_results$`p adj`)))
 }
 
-
-# 12) Apply to each isoform ---------------------------------------------
+# 12) Apply Per Isoform + FDR -------------------------------------------
 anova_results <- long_df %>%
   group_by(isoform_id, gene_name) %>%
   group_modify(~get_dominant_day(.x)) %>%
   ungroup()
 
-# 13) Save the results --------------------------------------------------
-write.csv(anova_results, "significant_isoform_upregulation_by_day.csv", row.names = FALSE)
+anova_results <- anova_results %>%
+  mutate(fdr = p.adjust(p_value, method = "fdr"))
 
-# Print top hits
-top_hits <- anova_results %>%
-  filter(!is.na(best_day)) %>%
-  arrange(p_value) %>%
+# 13) Save All and Significant Hits -------------------------------------
+write.csv(anova_results, "em_significant_isoform_upregulation_by_day_fdr.csv", row.names = FALSE)
+
+significant_isoforms <- anova_results %>%
+  filter(!is.na(best_day), fdr < 0.05)
+
+write.csv(significant_isoforms, "em_significant_isoforms_fdr_below_0.05.csv", row.names = FALSE)
+
+# 14) Show Top Hits -----------------------------------------------------
+top_hits <- significant_isoforms %>%
+  arrange(fdr) %>%
   head(10)
 
-print("Top significantly upregulated isoforms:")
+print("✅ Top significantly upregulated EM isoforms (FDR < 0.05):")
 print(top_hits)
