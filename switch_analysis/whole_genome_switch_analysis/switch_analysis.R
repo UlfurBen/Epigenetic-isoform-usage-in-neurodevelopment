@@ -134,18 +134,31 @@ anova_results <- long_df %>%
 anova_results <- anova_results %>%
   mutate(fdr = p.adjust(p_value, method = "fdr"))
 
-# 13) Save the results --------------------------------------------------
-write.csv(anova_results, "whole_genome_significant_isoform_upregulation_by_day_fdr.csv", row.names = FALSE)
+# 13) Calculate Expression Fold Changes ---------------------------------
+expression_summary <- long_df %>%
+  group_by(isoform_id, day) %>%
+  summarise(mean_expr = mean(expression, na.rm = TRUE), .groups = "drop") %>%
+  pivot_wider(names_from = day, values_from = mean_expr)
+
+anova_results <- anova_results %>%
+  left_join(expression_summary, by = "isoform_id") %>%
+  mutate(
+    max_expr = pmax(Day3, Day6, Day12, na.rm = TRUE),
+    min_expr = pmin(Day3, Day6, Day12, na.rm = TRUE),
+    fold_change = max_expr / (min_expr + 1e-6)  # avoid division by zero
+  )
+# 14) Save All and Significant Hits -------------------------------------
+write.csv(anova_results, "whole_genome_significant_isoform_upregulation_by_day_fdr_fc.csv", row.names = FALSE)
 
 significant_isoforms <- anova_results %>%
-  filter(!is.na(best_day), fdr < 0.05)
+  filter(!is.na(best_day), fdr < 0.05, fold_change > 2)
 
-write.csv(significant_isoforms, "whole_genome_significant_isoforms_fdr_below_0.05_switch_analysis.csv", row.names = FALSE)
+write.csv(significant_isoforms, "whole_genome_significant_isoforms_fdr_below_0.05_fc_above_2.csv", row.names = FALSE)
 
-# 14) optional, print the top 10 most significantly expressed isoforms 
+# 15) Show Top Hits -----------------------------------------------------
 top_hits <- significant_isoforms %>%
   arrange(fdr) %>%
   head(10)
 
-print("Top significantly upregulated isoforms (FDR < 0.05):")
+print("✅ Top significantly upregulated EM isoforms (FDR < 0.05 and FC > 2):")
 print(top_hits)
