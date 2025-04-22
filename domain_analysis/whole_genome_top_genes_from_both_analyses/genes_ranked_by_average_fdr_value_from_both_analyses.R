@@ -14,6 +14,11 @@ exon_min_fdr <- exon_data %>%
 isoform_data <- read_csv("whole_genome_significant_isoforms_fdr_below_0.05_fc_above_2.csv", show_col_types = FALSE) %>%
   mutate(gene_name = trimws(gene_name))
 
+isoform_data <- isoform_data %>%
+  group_by(gene_name) %>%
+  slice_min(order_by = fdr, n = 1, with_ties = FALSE) %>%
+  ungroup()
+
 # 4. Join by gene name (case-insensitive just in case)
 merged <- inner_join(
   isoform_data %>% mutate(gene_name_lower = tolower(gene_name)),
