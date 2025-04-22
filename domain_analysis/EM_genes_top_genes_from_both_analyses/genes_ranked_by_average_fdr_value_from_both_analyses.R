@@ -9,7 +9,7 @@ exon_data <- read_csv("EM_genes_exons_prioritized_by_fdr_and_ratio.csv", show_co
 # 2. Ensure min FDR per gene exists
 exon_min_fdr <- exon_data %>%
   group_by(gene) %>%
-  summarise(exon_fdr = min(min_fdr_for_gene, na.rm = TRUE), .groups = "drop")
+  summarise(exon_fdr = min(fdr, na.rm = TRUE), .groups = "drop")
 
 # 3. Load isoform-level FDR (this one is comma-delimited) and keep only lowest FDR per gene
 isoform_data_raw <- read_csv("em_significant_isoforms_fdr_below_0.05_fc_above_2.csv", show_col_types = FALSE) %>%
