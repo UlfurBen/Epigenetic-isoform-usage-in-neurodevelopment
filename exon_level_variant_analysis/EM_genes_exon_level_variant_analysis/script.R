@@ -640,6 +640,12 @@ fisher_results <- merged_variants %>%
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
+# Add ClinVar/gnomAD ratio (effect size)
+fisher_results <- fisher_results %>%
+  mutate(
+    clinvar_gnomad_ratio = (variant_count_clinvar + 1e-6) / (variant_count_gnomad + 1e-6)
+  )
+
 # Select only desired columns
 fisher_results_limited <- fisher_results %>%
   dplyr::select(
@@ -670,3 +676,14 @@ cat("✔ Number of genes with at least one exon significantly enriched (FDR < 0.
 
 # Save final filtered table
 write_csv(significant_genes, "all_EM_genes_with_significant_exons.csv")
+
+# Create final ranking: only keep FDR < 0.05 and ratio > 1
+ranked_exons <- fisher_results %>%
+  filter(fdr < 0.05, clinvar_gnomad_ratio > 2) %>%
+  mutate(avg_rank_score = rank(fdr) + rank(-clinvar_gnomad_ratio)) %>%  # lower FDR, higher ratio = better
+  arrange(avg_rank_score)
+
+# Save prioritized exons
+write_csv(ranked_exons, "EM_genes_exon_fisher_prioritized_by_ratio_and_fdr.csv")
+cat("✔ Ranked exons saved to 'EM_genes_exon_fisher_prioritized_by_ratio_and_fdr.csv'\n")
+
