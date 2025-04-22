@@ -2,7 +2,7 @@ library(readr)
 library(dplyr)
 
 # 1. Load exon-level data (tab-delimited!)
-exon_data <- read_csv("whole_genome_genes_with_significant_exons.csv", show_col_types = FALSE) %>%
+exon_data <- read_csv("whole_genome_exons_prioritized_by_fdr_and_ratio.csv", show_col_types = FALSE) %>%
   mutate(gene = trimws(gene))
 
 # 2. Ensure min FDR per gene exists
@@ -11,7 +11,7 @@ exon_min_fdr <- exon_data %>%
   summarise(exon_fdr = min(min_fdr_for_gene, na.rm = TRUE), .groups = "drop")
 
 # 3. Load isoform-level FDR (this one is comma-delimited)
-isoform_data <- read_csv("lowest_fdr_isoform_per_gene.csv", show_col_types = FALSE) %>%
+isoform_data <- read_csv("whole_genome_significant_isoforms_fdr_below_0.05_fc_above_2.csv", show_col_types = FALSE) %>%
   mutate(gene_name = trimws(gene_name))
 
 # 4. Join by gene name (case-insensitive just in case)
