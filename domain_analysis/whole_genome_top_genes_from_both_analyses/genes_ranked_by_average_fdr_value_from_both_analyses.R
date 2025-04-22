@@ -27,7 +27,7 @@ ranked <- merged %>%
   arrange(avg_fdr)
 
 # 6. Save result
-write_csv(ranked, "intersected_genes_ranked_by_avg_fdr.csv")
+write_csv(head(ranked, 10), "intersected_genes_ranked_by_avg_fdr.csv")
 
 # 7. Print summary
 cat("✅ Intersected and ranked genes saved to 'intersected_genes_ranked_by_avg_fdr.csv'\n")
