@@ -29,8 +29,11 @@ merged <- inner_join(
 
 # 5. Compute average FDR and sort
 ranked <- merged %>%
-  mutate(avg_fdr = (fdr + exon_fdr) / 2) %>%
-  arrange(avg_fdr)
+  mutate(
+    composite_score = -log10(fdr) + -log10(exon_fdr),
+    min_fdr = pmin(fdr, exon_fdr)
+  ) %>%
+  arrange(desc(composite_score))
 
 # 6. Save result
 write_csv(head(ranked, 10), "EM_genes_intersected_genes_ranked_by_avg_fdr.csv")
