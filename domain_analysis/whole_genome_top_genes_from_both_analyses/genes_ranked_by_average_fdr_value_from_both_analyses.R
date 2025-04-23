@@ -1,42 +1,45 @@
 library(readr)
 library(dplyr)
 
-# 1. Load exon-level data (tab-delimited!)
+# 1. Load exon-level data (prioritized by odds ratio)
 exon_data <- read_csv("whole_genome_exons_prioritized_by_fdr_and_ratio.csv", show_col_types = FALSE) %>%
   mutate(gene = trimws(gene))
 
-# 2. Ensure min FDR per gene exists
-exon_min_fdr <- exon_data %>%
+# 2. For each gene, get the exon with the highest odds ratio (lowest FDR in case of tie)
+exon_top_hits <- exon_data %>%
+  filter(!is.na(fdr), !is.na(odds_ratio)) %>%
   group_by(gene) %>%
-  summarise(exon_fdr = min(fdr, na.rm = TRUE), .groups = "drop")
+  slice_max(order_by = odds_ratio, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
+  dplyr::select(gene, exon_fdr = fdr, odds_ratio)
 
-# 3. Load isoform-level FDR (this one is comma-delimited)
+# 3. Load isoform-level data (significant expression hits)
 isoform_data <- read_csv("whole_genome_significant_isoforms_fdr_below_0.05_fc_above_2.csv", show_col_types = FALSE) %>%
-  mutate(gene_name = trimws(gene_name))
-
-isoform_data <- isoform_data %>%
+  mutate(gene_name = trimws(gene_name)) %>%
+  filter(!is.na(fdr)) %>%
   group_by(gene_name) %>%
   slice_min(order_by = fdr, n = 1, with_ties = FALSE) %>%
-  ungroup()
+  ungroup() %>%
+  dplyr::select(gene_name, isoform_fdr = fdr)
 
-# 4. Join by gene name (case-insensitive just in case)
+# 4. Join by gene name (case-insensitive)
 merged <- inner_join(
   isoform_data %>% mutate(gene_name_lower = tolower(gene_name)),
-  exon_min_fdr %>% mutate(gene_lower = tolower(gene)),
+  exon_top_hits %>% mutate(gene_lower = tolower(gene)),
   by = c("gene_name_lower" = "gene_lower")
 )
 
-# 5. Compute average FDR and sort
+# 5. Composite scoring: combine odds ratio and -log10 FDRs
 ranked <- merged %>%
   mutate(
-    composite_score = -log10(fdr) + -log10(exon_fdr),
-    min_fdr = pmin(fdr, exon_fdr)
+    composite_score = -log10(isoform_fdr) + -log10(exon_fdr) + log2(odds_ratio),
+    min_fdr = pmin(isoform_fdr, exon_fdr)
   ) %>%
   arrange(desc(composite_score))
 
-# 6. Save result
-write_csv(head(ranked, 10), "intersected_genes_ranked_by_avg_fdr.csv")
+# 6. Save top 10 results
+write_csv(head(ranked, 10), "intersected_genes_ranked_by_composite_score.csv")
 
-# 7. Print summary
-cat("✅ Intersected and ranked genes saved to 'intersected_genes_ranked_by_avg_fdr.csv'\n")
-print(head(ranked %>% dplyr::select(gene_name, fdr, exon_fdr, avg_fdr), 10))
+# 7. Show summary
+cat("✅ Intersected genes saved to 'intersected_genes_ranked_by_composite_score.csv'\n")
+print(head(ranked %>% dplyr::select(gene_name, isoform_fdr, exon_fdr, odds_ratio, composite_score), 10))
