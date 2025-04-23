@@ -110,7 +110,7 @@ plot_lollipop <- ggplot() +
     limits = c(-domain_height - label_offset * 2.5, max(clinvar_counts$Count) + 1),
     expand = c(0, 0)
   ) +
-  ggtitle("ClinVar Missense Variants in CHD3 (Pfam Domains Only)") +
+  ggtitle("ClinVar Pathogenic And/Or Likely Pathogenic Missense Variants in CHD3 (Pfam Domains Only)") +
   custom_theme
 
 
