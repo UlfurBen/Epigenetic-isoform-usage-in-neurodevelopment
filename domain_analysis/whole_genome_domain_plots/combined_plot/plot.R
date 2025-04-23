@@ -96,7 +96,7 @@ combined_df <- bind_rows(clinvar_counts, gnomad_counts)
 # -------------------------------
 ggplot(combined_df, aes(x = reorder(Domain, -Percent), y = Percent, color = Source)) +
   geom_point(size = 3, alpha = 0.9) +
-  scale_color_manual(values = c("ClinVar" = "firebrick", "gnomAD" = "gray40")) +
+  scale_color_manual(values = c("ClinVar Pathogenic And/Or Likely Pathogenic Missense Variants" = "firebrick", "gnomAD" = "gray40")) +
   labs(
     title = "Percent of Missense Variants in Pfam Domains for GABRG2",
     x = "Domain (including Non-domain)",
