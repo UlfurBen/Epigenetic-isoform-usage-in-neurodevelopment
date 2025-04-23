@@ -625,22 +625,27 @@ merged_variants <- merged_variants %>%
     d = total_gnomad_gene - variant_count_gnomad
   )
 
-# Run Fisher's Exact Test for each exon
+# Run Fisher's Exact Test for each exon (with odds ratio)
 fisher_results <- merged_variants %>%
   rowwise() %>%
   mutate(
-    fisher_p = tryCatch({
-      mat <- matrix(c(a, b, c, d), nrow = 2)
-      fisher.test(mat)$p.value
-    }, error = function(e) NA_real_)
+    fisher_output = list(
+      tryCatch({
+        mat <- matrix(c(a, b, c, d), nrow = 2)
+        fisher.test(mat)
+      }, error = function(e) NA)
+    ),
+    fisher_p = ifelse(is.na(fisher_output), NA, fisher_output[[1]]$p.value),
+    odds_ratio = ifelse(is.na(fisher_output), NA, fisher_output[[1]]$estimate)
   ) %>%
   ungroup()
+
 
 # Add FDR correction
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
-# Select only desired columns
+# Select only desired columns (now includes odds ratio)
 fisher_results_limited <- fisher_results %>%
   dplyr::select(
     gene,
@@ -649,8 +654,10 @@ fisher_results_limited <- fisher_results %>%
     variant_count_clinvar = a,
     variant_count_gnomad = c,
     fisher_p,
-    fdr
+    fdr,
+    odds_ratio
   )
+
 
 # Save full results (limited columns)
 write_csv(fisher_results_limited, "EM_genes_exon_fisher_enrichment_results.csv")
@@ -683,21 +690,24 @@ write_csv(significant_genes, "all_EM_genes_with_significant_exons.csv")
 library(dplyr)
 library(readr)
 
-# Load exon-level Fisher test results (includes variant counts & FDRs)
+# Load exon-level Fisher test results (includes odds ratios and FDRs)
 fisher_df <- read_csv("EM_genes_exon_fisher_enrichment_results.csv", show_col_types = FALSE)
 
-# Recalculate ClinVar/gnomAD ratio safely
+# Ensure missing odds_ratios are handled properly
 fisher_df <- fisher_df %>%
   mutate(
+    odds_ratio = as.numeric(odds_ratio),
     clinvar_gnomad_ratio = (variant_count_clinvar + 1e-6) / (variant_count_gnomad + 1e-6)
   )
 
-# Filter for significant exons with biologically meaningful ratios
+# Filter for significant exons with biologically meaningful odds ratio
 prioritized_exons <- fisher_df %>%
-  filter(fdr < 0.05, clinvar_gnomad_ratio > 2) %>%
-  mutate(avg_rank_score = rank(fdr) + rank(-clinvar_gnomad_ratio)) %>%
+  filter(fdr < 0.05, odds_ratio > 2) %>%
+  mutate(
+    avg_rank_score = rank(fdr) + rank(-odds_ratio)  # Lower FDR + Higher Odds Ratio = better
+  ) %>%
   arrange(avg_rank_score)
 
-# Save output
-write_csv(prioritized_exons, "EM_genes_exons_prioritized_by_fdr_and_ratio.csv")
-cat("✔ Prioritized exons saved to 'EM_genes_exons_prioritized_by_fdr_and_ratio.csv'\n")
+# Save prioritized output
+write_csv(prioritized_exons, "EM_genes_exons_prioritized_by_fdr_and_oddsratio.csv")
+cat("✔ Prioritized exons saved to 'EM_genes_exons_prioritized_by_fdr_and_oddsratio.csv'\n")
