@@ -40,4 +40,4 @@ write_csv(head(ranked, 10), "EM_genes_intersected_genes_ranked_by_avg_fdr.csv")
 
 # 7. Print summary
 cat("✅ Intersected and ranked genes saved to 'EM_genes_intersected_genes_ranked_by_avg_fdr.csv'\n")
-print(head(ranked %>% dplyr::select(gene_name, fdr, exon_fdr, avg_fdr), 10))
+print(head(ranked %>% dplyr::select(gene_name, fdr, exon_fdr, composite_score), 10))
