@@ -591,12 +591,17 @@ merged_variants <- merged_variants %>%
 fisher_results <- merged_variants %>%
   rowwise() %>%
   mutate(
-    fisher_p = tryCatch({
-      mat <- matrix(c(a, b, c, d), nrow = 2)
-      fisher.test(mat)$p.value
-    }, error = function(e) NA_real_)
+    fisher_output = list(
+      tryCatch({
+        mat <- matrix(c(a, b, c, d), nrow = 2)
+        fisher.test(mat)
+      }, error = function(e) NULL)
+    ),
+    fisher_p = if (!is.null(fisher_output)) fisher_output$p.value else NA_real_,
+    odds_ratio = if (!is.null(fisher_output)) fisher_output$estimate[[1]] else NA_real_
   ) %>%
   ungroup()
+
 
 # Add FDR correction
 fisher_results <- fisher_results %>%
@@ -611,8 +616,10 @@ fisher_results_limited <- fisher_results %>%
     variant_count_clinvar = a,
     variant_count_gnomad = c,
     fisher_p,
-    fdr
+    fdr,
+    odds_ratio
   )
+
 
 # Save full results (limited columns)
 write_csv(fisher_results_limited, "whole_genome_exon_fisher_enrichment_results.csv")
@@ -647,89 +654,6 @@ write_csv(significant_genes, "whole_genome_genes_with_significant_exons.csv")
 
 
 
-# Whole gene fisher test checking enrichment difference between canonical and non canonical isoforms
-
-library(dplyr)
-library(readr)
-library(tidyr)
-
-# Load the exon-level Fisher results (which already include a/c and isoform type)
-merged <- read_csv("whole_genome_exon_fisher_enrichment_results.csv", show_col_types = FALSE)
-
-# Check if needed columns are present
-required_cols <- c("gene", "isoform_type", "a", "c")
-if (!all(required_cols %in% colnames(merged))) {
-  stop("❌ One or more required columns are missing from 'whole_genome_exon_fisher_enrichment_results.csv': ", 
-       paste(setdiff(required_cols, colnames(merged)), collapse = ", "))
-}
-
-# Summarize ClinVar and gnomAD counts by gene and isoform type
-summary_by_gene <- merged %>%
-  group_by(gene, isoform_type) %>%
-  summarize(
-    clinvar = sum(a, na.rm = TRUE),
-    gnomad = sum(c, na.rm = TRUE),
-    .groups = "drop"
-  )
-
-# Convert to wide format to separate canonical and non-canonical counts per gene
-wide_by_gene <- summary_by_gene %>%
-  pivot_wider(
-    names_from = isoform_type,
-    values_from = c(clinvar, gnomad),
-    values_fill = 0  # fill with 0 if a gene lacks one exon type
-  )
-
-# Optional: Keep only genes with both isoform types
-wide_by_gene <- wide_by_gene %>%
-  filter(!is.na(clinvar_canonical), !is.na(clinvar_non_canonical))
-
-# Run Fisher's exact test per gene
-fisher_results_per_gene <- wide_by_gene %>%
-  rowwise() %>%
-  mutate(
-    fisher_p = tryCatch({
-      mat <- matrix(c(
-        clinvar_non_canonical, clinvar_canonical,
-        gnomad_non_canonical, gnomad_canonical
-      ), nrow = 2)
-      fisher.test(mat)$p.value
-    }, error = function(e) NA_real_)
-  ) %>%
-  ungroup()
-
-# Add FDR correction for multiple testing
-fisher_results_per_gene <- fisher_results_per_gene %>%
-  mutate(
-    fdr = p.adjust(fisher_p, method = "fdr")
-  )
-
-# Add enrichment ratio
-fisher_results_per_gene <- fisher_results_per_gene %>%
-  mutate(
-    clinvar_ratio = clinvar_non_canonical / (clinvar_non_canonical + clinvar_canonical + 1e-6),
-    gnomad_ratio  = gnomad_non_canonical / (gnomad_non_canonical + gnomad_canonical + 1e-6),
-    enrichment_ratio = clinvar_ratio / gnomad_ratio
-  )
-
-# Filter significant genes and sort by enrichment ratio
-significant_genes <- fisher_results_per_gene %>%
-  filter(fdr < 0.05) %>%                # Keep only genes with significant enrichment
-  arrange(desc(enrichment_ratio))       # Sort descending by enrichment
-
-# Save sorted significant genes
-write_csv(significant_genes, "significant_enriched_genes_sorted.csv")  
-cat("✔ Significant genes sorted by enrichment ratio saved to 'significant_enriched_genes_sorted.csv'\n")
-
-# Save output
-write_csv(fisher_results_per_gene, "whole_genome_per_gene_fisher_results.csv")
-cat("✔ Per-gene Fisher's test results saved to 'whole_genome_per_gene_fisher_results.csv'\n")
-
-
-
-
-
-
 
 
 
@@ -739,16 +663,19 @@ library(readr)
 # Load exon-level Fisher test results (includes variant counts & FDRs)
 fisher_df <- read_csv("whole_genome_exon_fisher_enrichment_results.csv", show_col_types = FALSE)
 
-# Recalculate ClinVar/gnomAD ratio safely
+# Add odds ratio and clinvar/gnomAD ratio (optional for comparison)
 fisher_df <- fisher_df %>%
   mutate(
+    odds_ratio = (variant_count_clinvar + 0.5) / (variant_count_gnomad + 0.5),  # fallback if OR not already calculated
     clinvar_gnomad_ratio = (variant_count_clinvar + 1e-6) / (variant_count_gnomad + 1e-6)
   )
 
-# Filter for significant exons with biologically meaningful ratios
+# If your file already contains an odds_ratio column, you can overwrite or keep it
+
+# Filter for significant exons with biologically meaningful odds ratio
 prioritized_exons <- fisher_df %>%
-  filter(fdr < 0.05, clinvar_gnomad_ratio > 2) %>%
-  mutate(avg_rank_score = rank(fdr) + rank(-clinvar_gnomad_ratio)) %>%
+  filter(fdr < 0.05, odds_ratio > 2) %>%
+  mutate(avg_rank_score = rank(fdr) + rank(-odds_ratio)) %>%
   arrange(avg_rank_score)
 
 # Save output
