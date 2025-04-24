@@ -14,7 +14,7 @@ exon_top_hits <- exon_data %>%
   dplyr::select(gene, exon_fdr = fdr, odds_ratio)
 
 # 3. Load isoform-level data (significant expression hits)
-isoform_data <- read_csv("whole_genome_significant_isoforms_fdr_below_0.05_fc_above_2.csv", show_col_types = FALSE) %>%
+isoform_data <- read_csv("whole_genome_isoform_significant_with_npc_fdr_fc.csv", show_col_types = FALSE) %>%
   mutate(gene_name = trimws(gene_name)) %>%
   filter(!is.na(fdr)) %>%
   group_by(gene_name) %>%
@@ -38,7 +38,7 @@ ranked <- merged %>%
   arrange(desc(composite_score))
 
 # 6. Save top 10 results
-write_csv(head(ranked, 10), "intersected_genes_ranked_by_composite_score.csv")
+write_csv(ranked, "intersected_genes_ranked_by_composite_score.csv")
 
 # 7. Show summary
 cat("✅ Intersected genes saved to 'intersected_genes_ranked_by_composite_score.csv'\n")
