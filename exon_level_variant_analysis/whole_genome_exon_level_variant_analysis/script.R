@@ -597,10 +597,11 @@ fisher_results <- merged_variants %>%
         fisher.test(mat)
       }, error = function(e) NULL)
     ),
-    fisher_p = if (!is.null(fisher_output[[1]])) fisher_output[[1]]$p.value else NA_real_,
-    odds_ratio = if (!is.null(fisher_output[[1]])) unname(fisher_output[[1]]$estimate[[1]]) else NA_real_
+    fisher_p = if (inherits(fisher_output[[1]], "htest")) fisher_output[[1]]$p.value else NA_real_,
+    odds_ratio = if (inherits(fisher_output[[1]], "htest")) unname(fisher_output[[1]]$estimate[[1]]) else NA_real_
   ) %>%
   ungroup()
+
 
 
 # Add FDR correction
