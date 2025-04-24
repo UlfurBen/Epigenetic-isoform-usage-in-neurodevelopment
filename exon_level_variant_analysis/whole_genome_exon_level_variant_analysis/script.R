@@ -552,23 +552,27 @@ if (nrow(final_results) > 0) {
 
                        
 
-# Run fisher test to find statistically significant enrichment in exons
+# Whole-genome Fisher test with robust output handling and case-sensitive gene symbol parsing
 
 library(dplyr)
 library(readr)
 
-# Load variant counts and exon metadata
+# Load input data
 clinvar_df <- read_csv("whole_genome_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
 gnomad_df <- read_csv("whole_genome_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
 all_exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
 
-# Merge ClinVar and gnomAD counts on exon ID
+# Ensure consistent trimming of gene names
+clinvar_df <- clinvar_df %>% mutate(gene = trimws(gene))
+gnomad_df <- gnomad_df %>% mutate(gene = trimws(gene))
+
+# Merge ClinVar and gnomAD counts
 merged_variants <- full_join(clinvar_df, gnomad_df,
                              by = c("gene", "ensembl_exon_id", "exon_chr", "exon_start", "exon_end", "isoform_type"),
                              suffix = c("_clinvar", "_gnomad")) %>%
   mutate(across(c(variant_count_clinvar, variant_count_gnomad), ~replace_na(., 0)))
 
-# Get gene-level totals for all exons (per source)
+# Get per-gene totals
 total_variant_counts <- merged_variants %>%
   group_by(gene) %>%
   summarize(
@@ -577,38 +581,37 @@ total_variant_counts <- merged_variants %>%
     .groups = "drop"
   )
 
-# Merge gene-level totals
+# Add totals to exon-level data
 merged_variants <- merged_variants %>%
   left_join(total_variant_counts, by = "gene") %>%
   mutate(
     a = variant_count_clinvar,
-    b = total_clinvar_gene - variant_count_clinvar,
+    b = total_clinvar_gene - a,
     c = variant_count_gnomad,
-    d = total_gnomad_gene - variant_count_gnomad
+    d = total_gnomad_gene - c
   )
 
-# Run Fisher's Exact Test for each exon (with odds ratio)
+# Run Fisher's exact test and compute odds ratios
 fisher_results <- merged_variants %>%
   rowwise() %>%
   mutate(
-    fisher_output = list(
+    fisher_stats = list(
       tryCatch({
         mat <- matrix(c(a, b, c, d), nrow = 2)
         fisher.test(mat)
       }, error = function(e) NULL)
     ),
-    fisher_p = if (inherits(fisher_output[[1]], "htest")) fisher_output[[1]]$p.value else NA_real_,
-    odds_ratio = if (inherits(fisher_output[[1]], "htest")) unname(fisher_output[[1]]$estimate[[1]]) else NA_real_
+    fisher_p = if (!is.null(fisher_stats) && !is.null(fisher_stats$p.value)) fisher_stats$p.value else NA_real_,
+    odds_ratio = if (!is.null(fisher_stats) && !is.null(fisher_stats$estimate)) unname(fisher_stats$estimate[[1]]) else NA_real_
   ) %>%
   ungroup()
 
 
-
-# Add FDR correction
+# FDR correction
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
-# Select only desired columns
+# Export results
 fisher_results_limited <- fisher_results %>%
   dplyr::select(
     gene,
@@ -621,64 +624,24 @@ fisher_results_limited <- fisher_results %>%
     odds_ratio
   )
 
-
-# Save full results (limited columns)
 write_csv(fisher_results_limited, "whole_genome_exon_fisher_enrichment_results.csv")
 cat("✔ Fisher's exact test results saved to 'whole_genome_exon_fisher_enrichment_results.csv'\n")
 
-# Identify genes with at least one exon showing significant ClinVar enrichment
+# Identify significant genes
 significant_genes <- fisher_results_limited %>%
   filter(fdr < 0.05) %>%
   group_by(gene) %>%
   slice_min(order_by = fdr, with_ties = FALSE) %>%
-  ungroup() %>%
-  mutate(min_fdr_for_gene = fdr)
+  ungroup()
 
-# Count how many unique genes
-cat("✔ Number of genes with at least one exon significantly enriched (FDR < 0.05):", nrow(significant_genes), "\n")
-
-# Save list of these genes and their minimum FDR p-value + exon info
 write_csv(significant_genes, "whole_genome_genes_with_significant_exons.csv")
+cat("✔ Significant gene list saved to 'whole_genome_genes_with_significant_exons.csv'\n")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-library(dplyr)
-library(readr)
-
-# Load exon-level Fisher test results (includes variant counts & FDRs)
-fisher_df <- read_csv("whole_genome_exon_fisher_enrichment_results.csv", show_col_types = FALSE)
-
-# Add odds ratio and clinvar/gnomAD ratio (optional for comparison)
-fisher_df <- fisher_df %>%
-  mutate(
-    odds_ratio = (variant_count_clinvar + 0.5) / (variant_count_gnomad + 0.5),  # fallback if OR not already calculated
-    clinvar_gnomad_ratio = (variant_count_clinvar + 1e-6) / (variant_count_gnomad + 1e-6)
-  )
-
-# If your file already contains an odds_ratio column, you can overwrite or keep it
-
-# Filter for significant exons with biologically meaningful odds ratio
-prioritized_exons <- fisher_df %>%
+# Rank significant exons by odds ratio
+prioritized_exons <- fisher_results_limited %>%
   filter(fdr < 0.05, odds_ratio > 2) %>%
   mutate(avg_rank_score = rank(fdr) + rank(-odds_ratio)) %>%
   arrange(avg_rank_score)
 
-# Save output
 write_csv(prioritized_exons, "whole_genome_exons_prioritized_by_fdr_and_ratio.csv")
 cat("✔ Prioritized exons saved to 'whole_genome_exons_prioritized_by_fdr_and_ratio.csv'\n")
