@@ -633,12 +633,13 @@ fisher_results <- merged_variants %>%
       tryCatch({
         mat <- matrix(c(a, b, c, d), nrow = 2)
         fisher.test(mat)
-      }, error = function(e) NA)
+      }, error = function(e) NULL)  # return NULL, not NA
     ),
-    fisher_p = ifelse(is.na(fisher_output), NA, fisher_output[[1]]$p.value),
-    odds_ratio = ifelse(is.na(fisher_output), NA, fisher_output[[1]]$estimate)
+    fisher_p = if (!is.null(fisher_output)) fisher_output$p.value else NA_real_,
+    odds_ratio = if (!is.null(fisher_output)) fisher_output$estimate[[1]] else NA_real_
   ) %>%
   ungroup()
+
 
 
 # Add FDR correction
