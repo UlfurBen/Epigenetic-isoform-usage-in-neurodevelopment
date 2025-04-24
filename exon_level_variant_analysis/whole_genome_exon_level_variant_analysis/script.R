@@ -587,21 +587,18 @@ merged_variants <- merged_variants %>%
     d = total_gnomad_gene - variant_count_gnomad
   )
 
-# Run Fisher's Exact Test for each exon
+# Run Fisher's Exact Test for each exon (with odds ratio)
 fisher_results <- merged_variants %>%
   rowwise() %>%
   mutate(
-    fisher_output = list(
-      tryCatch({
-        mat <- matrix(c(a, b, c, d), nrow = 2)
-        fisher.test(mat)
-      }, error = function(e) NULL)
-    ),
+    fisher_output = tryCatch({
+      mat <- matrix(c(a, b, c, d), nrow = 2)
+      fisher.test(mat)
+    }, error = function(e) NULL),
     fisher_p = if (!is.null(fisher_output)) fisher_output$p.value else NA_real_,
-    odds_ratio = if (!is.null(fisher_output)) fisher_output$estimate[[1]] else NA_real_
+    odds_ratio = if (!is.null(fisher_output)) unname(fisher_output$estimate[[1]]) else NA_real_
   ) %>%
   ungroup()
-
 
 # Add FDR correction
 fisher_results <- fisher_results %>%
