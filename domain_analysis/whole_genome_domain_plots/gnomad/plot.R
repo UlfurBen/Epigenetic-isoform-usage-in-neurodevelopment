@@ -1,5 +1,5 @@
 ###############################################################################
-# gnomAD Missense Variant Lollipop Plot with Pfam Domains and Canonical Exons
+# gnomAD Missense Variant Lollipop Plot with Pfam Domains and Unique Non-Canonical Exons
 ###############################################################################
 
 # Load required libraries
@@ -63,7 +63,7 @@ variant_counts <- variants_df %>%
   summarise(Count = n(), .groups = "drop")
 
 ###############################################################################
-# 3) Get canonical exons using biomaRt
+# 3) Get Unique Non-Canonical Exons using biomaRt
 ###############################################################################
 
 ensembl_mart <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
@@ -82,27 +82,43 @@ transcript_data <- getBM(
   mart = ensembl_mart
 )
 
-canonical_transcript <- transcript_data %>%
+canonical_transcripts <- transcript_data %>%
+  group_by(ensembl_gene_id) %>%
   slice_max(transcript_length, n = 1, with_ties = FALSE) %>%
-  pull(ensembl_transcript_id)
+  ungroup() %>%
+  dplyr::select(ensembl_transcript_id)
 
-exon_data <- getBM(
-  attributes = c("ensembl_exon_id", "ensembl_transcript_id", "cds_start", "cds_end"),
-  filters = "ensembl_transcript_id",
-  values = canonical_transcript,
+exon_data_full <- getBM(
+  attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_exon_id", "cds_start", "cds_end"),
+  filters = "ensembl_gene_id",
+  values = gene_info$ensembl_gene_id,
   mart = ensembl_mart
 ) %>%
   filter(!is.na(cds_start), !is.na(cds_end)) %>%
   mutate(
     Start = as.numeric(cds_start) %/% 3,
-    End = as.numeric(cds_end) %/% 3,
-    Exon_Label = ensembl_exon_id
+    End = as.numeric(cds_end) %/% 3
+  )
+
+# Identify non-canonical exons unique to a single isoform
+noncanonical_unique_exons <- exon_data_full %>%
+  group_by(ensembl_exon_id) %>%
+  summarise(
+    Start = min(Start),
+    End = max(End),
+    n_transcripts = n_distinct(ensembl_transcript_id),
+    is_canonical = any(ensembl_transcript_id %in% canonical_transcripts$ensembl_transcript_id),
+    .groups = "drop"
   ) %>%
-  dplyr::select(Start, End, Exon_Label) %>%
-  arrange(Start)
+  filter(n_transcripts == 1, !is_canonical) %>%
+  arrange(Start) %>%
+  mutate(overlap = Start < lag(End, default = -Inf)) %>%
+  filter(!overlap) %>%
+  mutate(Exon_Label = ensembl_exon_id) %>%
+  dplyr::select(Start, End, Exon_Label)
 
 ###############################################################################
-# 4) Plot Lollipop with Domains + Exons
+# 4) Plot Lollipop with Domains + Unique Non-Canonical Exons
 ###############################################################################
 
 domain_height <- max(variant_counts$Count, na.rm = TRUE) * 0.2
@@ -123,16 +139,16 @@ domain_colors <- setNames(rainbow(length(unique(domain_data$Name))), unique(doma
 
 plot_gnomad <- ggplot() +
   
-  # Canonical exons
+  # Non-canonical unique exons
   geom_rect(
-    data = exon_data,
+    data = noncanonical_unique_exons,
     aes(xmin = Start, xmax = End, ymin = -domain_height - exon_bar_height, ymax = -domain_height),
     fill = "gray90", color = "black", alpha = 0.8
   ) +
   
   # Exon labels angled
   geom_text(
-    data = exon_data,
+    data = noncanonical_unique_exons,
     aes(x = (Start + End) / 2, y = -domain_height - exon_bar_height - label_offset * 0.5, label = Exon_Label),
     size = 2.8, angle = 45, hjust = 1, vjust = 1
   ) +
@@ -165,12 +181,12 @@ plot_gnomad <- ggplot() +
     expand = c(0, 0)
   ) +
   scale_fill_manual(name = "Pfam Domains", values = domain_colors) +
-  ggtitle("gnomAD Missense Variants in GABRG2 (Pfam Domains + Canonical Exons)") +
+  ggtitle("gnomAD Missense Variants in GABRG2 (Pfam Domains + Unique Non-Canonical Exons)") +
   custom_theme
 
 ###############################################################################
 # 5) Save Output
 ###############################################################################
 
-ggsave("lollipop_gnomAD_GABRG2_Pfam_and_Exons.png", plot_gnomad, width = 12, height = 5, dpi = 300)
-message("✅ Saved as: lollipop_gnomAD_GABRG2_Pfam_and_Exons.png")
+ggsave("lollipop_gnomAD_GABRG2_noncanonical_exons.png", plot_gnomad, width = 12, height = 5, dpi = 300)
+message("✅ Saved as: lollipop_gnomAD_GABRG2_noncanonical_exons.png")
