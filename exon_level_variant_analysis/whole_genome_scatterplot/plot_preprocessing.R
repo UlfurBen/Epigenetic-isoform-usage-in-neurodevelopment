@@ -7,8 +7,8 @@ library(dplyr)
 library(readr)
 
 # Load inputs
-clinvar <- read_csv("whole_genome_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad  <- read_csv("whole_genome_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
+clinvar <- read_csv("whole_genome_non_overlapping_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
+gnomad  <- read_csv("whole_genome_non_overlapping_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
 
 # Merge variant counts on exon coordinates
 merged <- full_join(clinvar, gnomad, 
@@ -23,5 +23,5 @@ merged <- merged %>%
   )
 
 # Save to file
-write_csv(merged, "whole_genome_exon_clinvar_gnomad_ratio_output.csv")
-cat("✔ Saved ClinVar/gnomAD ratio data with constraint scores to 'whole_genome_exon_clinvar_gnomad_ratio_output.csv'\n")
+write_csv(merged, "whole_genome_non_overlapping_exon_clinvar_gnomad_ratio_output.csv")
+cat("✔ Saved ClinVar/gnomAD ratio data with constraint scores to 'whole_genome_non_overlapping_exon_clinvar_gnomad_ratio_output.csv'\n")
