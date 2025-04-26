@@ -1,48 +1,51 @@
+###########################################################################################
+# Create non-overlapping, unique-to-one-isoform exons for EM genes
+###########################################################################################
+
 # Load required libraries
 library(biomaRt)
 library(dplyr)
+library(readr)
 
 # Connect to Ensembl BioMart using the "useast" mirror
 ensembl_mart <- useEnsembl(biomart = "ensembl", 
                            dataset = "hsapiens_gene_ensembl", 
                            mirror = "useast")
 
-# List attributes containing "external_gene_name" for verification
-# all_attrs <- listAttributes(ensembl_mart)
-# gene_attrs <- all_attrs[grep("external_gene_name", all_attrs$name, ignore.case = TRUE), ]
-# print(gene_attrs)
+# Define the list of EM target genes
+target_genes <- c(
+  "AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
+  "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
+  "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
+  "CBX1", "CBX2", "CBX3", "CBX4", "CBX5", "CBX6", "CBX7", "CBX8", "CDY1", "CDY2A", "CDYL",
+  "CDYL2", "CECR2", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5", "CHD6", "CHD7", "CHD8", "CHD9",
+  "CREBBP", "CXXC1", "CXXC4", "CXXC5", "DIDO1", "DNMT1", "DNMT3A", "DNMT3B", "DNMT3L", "DPF1",
+  "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
+  "GLYR1", "HDAC1", "HDAC10", "HDAC11", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7",
+  "HDAC8", "HDAC9", "HDGF", "HDGFL1", "HDGFRP2", "HDGFRP3", "HIF1AN", "HR", "HSPBAP1", "ING1",
+  "ING2", "ING3", "ING4", "ING5", "INO80", "INTS12", "JADE1", "JADE2", "JADE3", "JARID2", "JMJD1C",
+  "JMJD4", "JMJD6", "JMJD7", "JMJD8", "KAT2A", "KAT2B", "KAT5", "KAT6A", "KAT6B", "KAT7", "KAT8",
+  "KDM1A", "KDM1B", "KDM2A", "KDM2B", "KDM3A", "KDM3B", "KDM4A", "KDM4B", "KDM4C", "KDM4D",
+  "KDM4E", "KDM5A", "KDM5B", "KDM5C", "KDM5D", "KDM6A", "KDM6B", "KDM7A", "KDM8", "KMT2A",
+  "KMT2B", "KMT2C", "KMT2D", "KMT2E", "KMT5A", "KMT5B", "KMT5C", "L3MBTL1", "L3MBTL2", "L3MBTL3",
+  "L3MBTL4", "LBR", "MBD1", "MBD2", "MBD3", "MBD4", "MBD5", "MBD6", "MBTD1", "MECP2", "MINA",
+  "MLLT10", "MLLT6", "MORC1", "MORC2", "MORC3", "MORC4", "MPHOSPH8", "MSH6", "MSL3", "MTA1",
+  "MTA2", "MTA3", "MTF2", "MUM1", "MUM1L1", "NSD1", "ORC1", "PBRM1", "PHF1", "PHF10", "PHF11",
+  "PHF12", "PHF13", "PHF14", "PHF19", "PHF2", "PHF20", "PHF20L1", "PHF21A", "PHF21B", "PHF23",
+  "PHF3", "PHF6", "PHF7", "PHF8", "PHIP", "PHRF1", "PRDM1", "PRDM10", "PRDM11", "PRDM12",
+  "PRDM13", "PRDM14", "PRDM15", "PRDM16", "PRDM2", "PRDM4", "PRDM5", "PRDM6", "PRDM7", "PRDM8",
+  "PRDM9", "PSIP1", "PWWP2A", "PWWP2B", "PYGO1", "PYGO2", "RAG2", "RAI1", "RERE", "RNF17",
+  "RSF1", "SCMH1", "SCML2", "SETD1A", "SETD1B", "SETD2", "SETD3", "SETD4", "SETD5", "SETD6",
+  "SETD7", "SETD9", "SETDB1", "SETDB2", "SETMAR", "SFMBT1", "SFMBT2", "SHPRH", "SIRT1", "SIRT2",
+  "SIRT3", "SIRT4", "SIRT5", "SIRT6", "SIRT7", "SMARCA1", "SMARCA2", "SMARCA4", "SMARCA5", "SMN1",
+  "SMNDC1", "SMYD1", "SMYD2", "SMYD3", "SMYD4", "SMYD5", "SND1", "SP110", "SP140", "SP140L",
+  "SRCAP", "STK31", "SUV39H1", "SUV39H2", "TAF1", "TAF1L", "TAF3", "TCF19", "TCF20", "TDRD1",
+  "TDRD10", "TDRD12", "TDRD15", "TDRD3", "TDRD5", "TDRD6", "TDRD7", "TDRD9", "TDRKH", "TET1",
+  "TET2", "TET3", "TNRC18", "TRIM24", "TRIM28", "TRIM33", "TRIM66", "TYW5", "UBR7", "UHRF1",
+  "UHRF2", "UTY", "WHSC1", "WHSC1L1", "ZCWPW1", "ZCWPW2", "ZMYND11", "ZMYND8"
+)
 
-target_genes <- c("AIRE", "AKAP1", "ALG13", "ASH1L", "ASXL1", "ASXL2", "ASXL3", "ATAD2", "ATAD2B", "ATRX",
-                  "BAHCC1", "BAHD1", "BAZ1A", "BAZ1B", "BAZ2A", "BAZ2B", "BPTF", "BRD1", "BRD2", "BRD3",
-                  "BRD4", "BRD7", "BRD8", "BRD9", "BRDT", "BRPF1", "BRPF3", "BRWD1", "BRWD3", "C14orf169",
-                  "CBX1", "CBX2", "CBX3", "CBX4", "CBX5", "CBX6", "CBX7", "CBX8", "CDY1", "CDY2A", "CDYL",
-                  "CDYL2", "CECR2", "CHD1", "CHD2", "CHD3", "CHD4", "CHD5", "CHD6", "CHD7", "CHD8", "CHD9",
-                  "CREBBP", "CXXC1", "CXXC4", "CXXC5", "DIDO1", "DNMT1", "DNMT3A", "DNMT3B", "DNMT3L", "DPF1",
-                  "DPF2", "DPF3", "EED", "EHMT1", "EHMT2", "EP300", "EP400", "EZH1", "EZH2", "FBXL19", "G2E3",
-                  "GLYR1", "HDAC1", "HDAC10", "HDAC11", "HDAC2", "HDAC3", "HDAC4", "HDAC5", "HDAC6", "HDAC7",
-                  "HDAC8", "HDAC9", "HDGF", "HDGFL1", "HDGFRP2", "HDGFRP3", "HIF1AN", "HR", "HSPBAP1", "ING1",
-                  "ING2", "ING3", "ING4", "ING5", "INO80", "INTS12", "JADE1", "JADE2", "JADE3", "JARID2", "JMJD1C",
-                  "JMJD4", "JMJD6", "JMJD7", "JMJD8", "KAT2A", "KAT2B", "KAT5", "KAT6A", "KAT6B", "KAT7", "KAT8",
-                  "KDM1A", "KDM1B", "KDM2A", "KDM2B", "KDM3A", "KDM3B", "KDM4A", "KDM4B", "KDM4C", "KDM4D",
-                  "KDM4E", "KDM5A", "KDM5B", "KDM5C", "KDM5D", "KDM6A", "KDM6B", "KDM7A", "KDM8", "KMT2A",
-                  "KMT2B", "KMT2C", "KMT2D", "KMT2E", "KMT5A", "KMT5B", "KMT5C", "L3MBTL1", "L3MBTL2", "L3MBTL3",
-                  "L3MBTL4", "LBR", "MBD1", "MBD2", "MBD3", "MBD4", "MBD5", "MBD6", "MBTD1", "MECP2", "MINA",
-                  "MLLT10", "MLLT6", "MORC1", "MORC2", "MORC3", "MORC4", "MPHOSPH8", "MSH6", "MSL3", "MTA1",
-                  "MTA2", "MTA3", "MTF2", "MUM1", "MUM1L1", "NSD1", "ORC1", "PBRM1", "PHF1", "PHF10", "PHF11",
-                  "PHF12", "PHF13", "PHF14", "PHF19", "PHF2", "PHF20", "PHF20L1", "PHF21A", "PHF21B", "PHF23",
-                  "PHF3", "PHF6", "PHF7", "PHF8", "PHIP", "PHRF1", "PRDM1", "PRDM10", "PRDM11", "PRDM12",
-                  "PRDM13", "PRDM14", "PRDM15", "PRDM16", "PRDM2", "PRDM4", "PRDM5", "PRDM6", "PRDM7", "PRDM8",
-                  "PRDM9", "PSIP1", "PWWP2A", "PWWP2B", "PYGO1", "PYGO2", "RAG2", "RAI1", "RERE", "RNF17",
-                  "RSF1", "SCMH1", "SCML2", "SETD1A", "SETD1B", "SETD2", "SETD3", "SETD4", "SETD5", "SETD6",
-                  "SETD7", "SETD9", "SETDB1", "SETDB2", "SETMAR", "SFMBT1", "SFMBT2", "SHPRH", "SIRT1", "SIRT2",
-                  "SIRT3", "SIRT4", "SIRT5", "SIRT6", "SIRT7", "SMARCA1", "SMARCA2", "SMARCA4", "SMARCA5", "SMN1",
-                  "SMNDC1", "SMYD1", "SMYD2", "SMYD3", "SMYD4", "SMYD5", "SND1", "SP110", "SP140", "SP140L",
-                  "SRCAP", "STK31", "SUV39H1", "SUV39H2", "TAF1", "TAF1L", "TAF3", "TCF19", "TCF20", "TDRD1",
-                  "TDRD10", "TDRD12", "TDRD15", "TDRD3", "TDRD5", "TDRD6", "TDRD7", "TDRD9", "TDRKH", "TET1",
-                  "TET2", "TET3", "TNRC18", "TRIM24", "TRIM28", "TRIM33", "TRIM66", "TYW5", "UBR7", "UHRF1",
-                  "UHRF2", "UTY", "WHSC1", "WHSC1L1", "ZCWPW1", "ZCWPW2", "ZMYND11", "ZMYND8")
-
-# Retrieve Ensembl Gene IDs for target genes using external_gene_name
+# Retrieve Ensembl Gene IDs for target genes
 gene_info <- getBM(
   attributes = c("ensembl_gene_id", "external_gene_name"),
   filters = "external_gene_name",
@@ -50,15 +53,11 @@ gene_info <- getBM(
   mart = ensembl_mart
 )
 
-# Check the retrieved gene_info column names
-print(names(gene_info))
-
-# Stop if no genes were found
 if (nrow(gene_info) == 0) {
   stop("No matching genes found in Ensembl. Check spelling or dataset availability.")
 }
 
-# Retrieve transcript data (including transcript length)
+# Retrieve transcript information
 transcript_data <- getBM(
   attributes = c("ensembl_gene_id", "ensembl_transcript_id", "transcript_length"),
   filters = "ensembl_gene_id",
@@ -66,14 +65,14 @@ transcript_data <- getBM(
   mart = ensembl_mart
 )
 
-# Identify canonical transcripts (longest transcript per gene)
+# Identify canonical transcripts (longest per gene)
 canonical_transcripts <- transcript_data %>%
   group_by(ensembl_gene_id) %>%
   slice_max(transcript_length, n = 1, with_ties = FALSE) %>%
   ungroup() %>%
   dplyr::select(ensembl_transcript_id)
 
-# Retrieve exon data for all target genes
+# Retrieve exon information
 exon_data <- getBM(
   attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_exon_id",
                  "exon_chrom_start", "exon_chrom_end", "chromosome_name"),
@@ -82,27 +81,20 @@ exon_data <- getBM(
   mart = ensembl_mart
 )
 
-# Merge gene info with exon data to include external gene names
+# Merge exon and gene data
 exons_joined <- merge(exon_data, gene_info, by = "ensembl_gene_id")
 
-# Print column names to check what we have
-print(names(exons_joined))
-
-# Rename columns using base R
+# Rename for clarity
 colnames(exons_joined)[colnames(exons_joined) == "external_gene_name"] <- "gene"
 colnames(exons_joined)[colnames(exons_joined) == "chromosome_name"] <- "exon_chr"
 colnames(exons_joined)[colnames(exons_joined) == "exon_chrom_start"] <- "exon_start"
 colnames(exons_joined)[colnames(exons_joined) == "exon_chrom_end"] <- "exon_end"
 
-# (Optional) Verify the new names
-print(names(exons_joined))
-
-# Convert exon start and end positions to numeric
+# Ensure numeric
 exons_joined$exon_start <- as.numeric(exons_joined$exon_start)
 exons_joined$exon_end   <- as.numeric(exons_joined$exon_end)
 
-# Group by exon and count how many distinct transcripts each exon appears in.
-# Also, annotate isoform type based on whether any of the transcripts is canonical.
+# Find unique-to-one-isoform exons
 unique_exons <- exons_joined %>%
   group_by(ensembl_exon_id, gene, exon_chr, exon_start, exon_end) %>%
   summarize(
@@ -111,17 +103,27 @@ unique_exons <- exons_joined %>%
                           "canonical", "non_canonical"),
     .groups = "drop"
   ) %>%
-  dplyr::filter(n_transcripts == 1)  # Keep only exons unique to a single isoform
+  dplyr::filter(n_transcripts == 1)
 
-# Save all unique exons (both canonical and non-canonical)
-write.csv(unique_exons, "EM_genes_all_exons_canonical_and_noncanonical.csv", row.names = FALSE)
+# Find non-overlapping exons within gene + chromosome
+non_overlapping_exons <- unique_exons %>%
+  group_by(gene, exon_chr) %>%
+  arrange(exon_start, .by_group = TRUE) %>%
+  mutate(
+    overlap = exon_start < lag(exon_end, default = -Inf)
+  ) %>%
+  ungroup() %>%
+  filter(!overlap)
 
-# Save only canonical unique exons
-canonical_exons_only <- unique_exons %>% filter(isoform_type == "canonical")
-write.csv(canonical_exons_only, "EM_genes_canonical_unique_exons.csv", row.names = FALSE)
+# Save
+write.csv(non_overlapping_exons, "EM_genes_non_overlapping_unique_exons.csv", row.names = FALSE)
 
-cat("✔ All unique exons saved to 'EM_genes_all_exons_canonical_and_noncanonical.csv'\n")
-cat("✔ Canonical unique exons saved to 'EM_genes_canonical_unique_exons.csv'\n")
+canonical_non_overlapping_exons_only <- non_overlapping_exons %>%
+  filter(isoform_type == "canonical")
+write.csv(canonical_non_overlapping_exons_only, "EM_genes_canonical_non_overlapping_unique_exons.csv", row.names = FALSE)
+
+cat("✔ All non-overlapping unique exons saved to 'EM_genes_non_overlapping_unique_exons.csv'\n")
+cat("✔ Canonical non-overlapping unique exons saved to 'EM_genes_canonical_non_overlapping_unique_exons.csv'\n")
 
 
 
@@ -229,7 +231,7 @@ library(dplyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv")
+exons <- read_csv("EM_genes_non_overlapping_unique_exons.csv")
 
 # Convert exon coordinates to numeric
 exons$exon_start <- as.numeric(exons$exon_start)
@@ -327,8 +329,8 @@ if(nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "EM_genes_exon_clinvar_variant_counts.csv", row.names = FALSE)
-  cat("Exon ClinVar variant counts and densities have been saved to 'EM_genes_exon_clinvar_variant_counts.csv'.\n")
+  write.csv(output, "EM_genes_non_overlapping_exon_clinvar_variant_counts.csv", row.names = FALSE)
+  cat("Exon ClinVar variant counts and densities have been saved to 'EM_genes_non_overlapping_exon_clinvar_variant_counts.csv'.\n")
 } else {
   cat("No exons with Pathogenic and/or Likely Pathogenic variants were found.\n")
 }
@@ -478,7 +480,7 @@ library(dplyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
+exons <- read_csv("EM_genes_non_overlapping_unique_exons.csv", show_col_types = FALSE)
 
 # Assumed columns: ensembl_exon_id, gene, exon_chr, exon_start, exon_end, isoform_type
 # Convert exon coordinates to numeric
@@ -566,8 +568,8 @@ if (nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "EM_genes_exon_gnomad_variant_counts.csv", row.names = FALSE)
-  cat("Exon gnomAD variant counts and densities have been saved to 'EM_genes_exon_gnomad_variant_counts.csv'.\n")
+  write.csv(output, "EM_genes_non_overlapping_exon_gnomad_variant_counts.csv", row.names = FALSE)
+  cat("Exon gnomAD variant counts and densities have been saved to 'EM_genes_non_overlapping_exon_gnomad_variant_counts.csv'.\n")
 } else {
   cat("No exons with variants were found in the gnomAD files.\n")
 }
@@ -589,24 +591,30 @@ if (nrow(final_results) > 0) {
 
 
 
-
-# Fisher test 
+###########################################################################################
+# EM Genes Fisher test: All Exons
+###########################################################################################
 
 library(dplyr)
 library(readr)
 
-# Load variant counts and exon metadata
-clinvar_df <- read_csv("EM_genes_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad_df <- read_csv("EM_genes_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
-all_exons <- read_csv("EM_genes_all_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
+# Load data
+clinvar_df <- read_csv("EM_genes_non_overlapping_exon_clinvar_variant_counts.csv", show_col_types = FALSE) %>%
+  mutate(gene = trimws(gene))
+gnomad_df <- read_csv("EM_genes_non_overlapping_exon_gnomad_variant_counts.csv", show_col_types = FALSE) %>%
+  mutate(gene = trimws(gene))
+all_exons <- read_csv("EM_genes_non_overlapping_unique_exons.csv", show_col_types = FALSE)
 
-# Merge ClinVar and gnomAD counts on exon ID
+# Merge exon-level variant counts
 merged_variants <- full_join(clinvar_df, gnomad_df,
                              by = c("gene", "ensembl_exon_id", "exon_chr", "exon_start", "exon_end", "isoform_type"),
                              suffix = c("_clinvar", "_gnomad")) %>%
-  mutate(across(c(variant_count_clinvar, variant_count_gnomad), ~replace_na(., 0)))
+  mutate(
+    variant_count_clinvar = replace_na(variant_count_clinvar, 0),
+    variant_count_gnomad = replace_na(variant_count_gnomad, 0)
+  )
 
-# Get gene-level totals for all exons (per source)
+# Calculate per-gene total counts
 total_variant_counts <- merged_variants %>%
   group_by(gene) %>%
   summarize(
@@ -615,17 +623,17 @@ total_variant_counts <- merged_variants %>%
     .groups = "drop"
   )
 
-# Merge gene-level totals
+# Merge totals into exon data
 merged_variants <- merged_variants %>%
   left_join(total_variant_counts, by = "gene") %>%
   mutate(
     a = variant_count_clinvar,
-    b = total_clinvar_gene - variant_count_clinvar,
+    b = total_clinvar_gene - a,
     c = variant_count_gnomad,
-    d = total_gnomad_gene - variant_count_gnomad
+    d = total_gnomad_gene - c
   )
 
-# Run Fisher's Exact Test for each exon (with odds ratio)
+# Perform Fisher's exact test
 fisher_results <- merged_variants %>%
   rowwise() %>%
   mutate(
@@ -633,82 +641,45 @@ fisher_results <- merged_variants %>%
       tryCatch({
         mat <- matrix(c(a, b, c, d), nrow = 2)
         fisher.test(mat)
-      }, error = function(e) NULL)  # return NULL, not NA
+      }, error = function(e) NULL)
     ),
     fisher_p = if (!is.null(fisher_output)) fisher_output$p.value else NA_real_,
-    odds_ratio = if (!is.null(fisher_output)) fisher_output$estimate[[1]] else NA_real_
+    odds_ratio = if (!is.null(fisher_output)) unname(fisher_output$estimate[[1]]) else NA_real_
   ) %>%
   ungroup()
 
-
-
-# Add FDR correction
+# Apply FDR correction
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
-# Select only desired columns (now includes odds ratio)
+# Select relevant columns
 fisher_results_limited <- fisher_results %>%
   dplyr::select(
-    gene,
-    ensembl_exon_id,
-    isoform_type,
+    gene, ensembl_exon_id, isoform_type,
     variant_count_clinvar = a,
     variant_count_gnomad = c,
-    fisher_p,
-    fdr,
-    odds_ratio
+    fisher_p, fdr, odds_ratio
   )
 
+# Save full exon-level results
+write_csv(fisher_results_limited, "EM_genes_non_overlapping_exon_fisher_enrichment_results.csv")
+cat("✔ Fisher's test results saved: 'EM_genes_non_overlapping_exon_fisher_enrichment_results.csv'\n")
 
-# Save full results (limited columns)
-write_csv(fisher_results_limited, "EM_genes_exon_fisher_enrichment_results.csv")
-cat("✔ Fisher's exact test results saved to 'EM_genes_exon_fisher_enrichment_results.csv'\n")
-
-# Identify genes with at least one significant exon (FDR < 0.05),
-# then select the exon with the lowest FDR per gene
+# Find significant genes (FDR < 0.05, best exon per gene)
 significant_genes <- fisher_results_limited %>%
   filter(fdr < 0.05) %>%
   group_by(gene) %>%
   slice_min(order_by = fdr, with_ties = FALSE) %>%
-  ungroup() %>%
-  mutate(min_fdr_for_gene = fdr)
+  ungroup()
 
-# Count how many unique genes were retained
-cat("✔ Number of genes with at least one exon significantly enriched (FDR < 0.05):", nrow(significant_genes), "\n")
+write_csv(significant_genes, "all_EM_genes_with_significant_non_overlapping_exons.csv")
+cat("✔ Significant genes saved: 'all_EM_genes_with_significant_non_overlapping_exons.csv'\n")
 
-# Save final filtered table
-write_csv(significant_genes, "all_EM_genes_with_significant_exons.csv")
-
-
-
-
-
-
-
-
-
-
-library(dplyr)
-library(readr)
-
-# Load exon-level Fisher test results (includes odds ratios and FDRs)
-fisher_df <- read_csv("EM_genes_exon_fisher_enrichment_results.csv", show_col_types = FALSE)
-
-# Ensure missing odds_ratios are handled properly
-fisher_df <- fisher_df %>%
-  mutate(
-    odds_ratio = as.numeric(odds_ratio),
-    clinvar_gnomad_ratio = (variant_count_clinvar + 1e-6) / (variant_count_gnomad + 1e-6)
-  )
-
-# Filter for significant exons with biologically meaningful odds ratio
-prioritized_exons <- fisher_df %>%
+# Prioritize exons (FDR < 0.05 and odds ratio > 2)
+prioritized_exons <- fisher_results_limited %>%
   filter(fdr < 0.05, odds_ratio > 2) %>%
-  mutate(
-    avg_rank_score = rank(fdr) + rank(-odds_ratio)  # Lower FDR + Higher Odds Ratio = better
-  ) %>%
+  mutate(avg_rank_score = rank(fdr) + rank(-odds_ratio)) %>%
   arrange(avg_rank_score)
 
-# Save prioritized output
-write_csv(prioritized_exons, "EM_genes_exons_prioritized_by_fdr_and_oddsratio.csv")
-cat("✔ Prioritized exons saved to 'EM_genes_exons_prioritized_by_fdr_and_oddsratio.csv'\n")
+write_csv(prioritized_exons, "EM_genes_non_overlapping_exons_prioritized_by_fdr_and_oddsratio.csv")
+cat("✔ Prioritized exons saved: 'EM_genes_non_overlapping_exons_prioritized_by_fdr_and_oddsratio.csv'\n")
