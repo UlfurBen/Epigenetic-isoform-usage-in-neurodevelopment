@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 # Load the CSV
-df = pd.read_csv("whole_genome_exon_clinvar_gnomad_ratio_output.csv")
+df = pd.read_csv("whole_genome_non_overlapping_exon_clinvar_gnomad_ratio_output.csv")
 
 # Filter out mitochondrial DNA (MT)
 df = df[df["exon_chr"].isin([str(i) for i in range(1, 23)] + ['X', 'Y'])].copy()
@@ -67,5 +67,5 @@ plt.legend()
 plt.tight_layout(pad=3.0)
 
 # Save and show
-plt.savefig("whole_genome_clinvar_gnomad_ratio_by_genomic_position_log_annotated.png", dpi=300)
+plt.savefig("whole_genome_non_overlapping_exons_clinvar_gnomad_ratio_by_genomic_position_log_annotated.png", dpi=300)
 plt.show()
