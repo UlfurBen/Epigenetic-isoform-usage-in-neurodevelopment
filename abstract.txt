@@ -1,0 +1,18 @@
+Notkun mismunandi ísóforma utangenaerfðakerfisins við taugaþroska og mikilvægi þeirra í sjúkdómum tengdum utangenaerfðakerfinu
+Úlfur Benedikt Fjölnisson¹, Katrín Möller¹, Hans Tómas Björnsson¹
+¹Læknadeild Háskóla Íslands, Reykjavík, Ísland
+
+Inngangur
+Stökkbreytingar í genum utangenaerfðakerfisins valda oftast taugaþroskaröskunum. Þekking á ísóform-sértækri notkun þessara gena og dreifingu mispörunarstökkbreytinga gæti varpað ljósi á undirliggjandi sjúkdómsferla.
+
+Markmið
+Að kanna hvort mispörunarstökkbreytingar safnist í sértækum ísóformum, hvort þessi ísóform hafi sérstaka tjáningu í taugaþroska og hvort þau gegni lykilhlutverki í sjúkdómum sem tengjast utangenaerfðakerfinu.
+
+Aðferðir
+Gögn voru sótt úr ClinVar og gnomAD gagnagrunnum til að meta dreifingu mispörunarstökkbreytinga á ísóformum 60 utangenaerfðagena. Notuð voru Fisher próf til að meta marktæka auðgun stökkbreytinga í sértækum ísóformsvæðum. RNA-raðgreiningargögn úr taugaþroskamódeli músar voru greind með IsoformSwitchAnalyzeR til að kanna sértæka ísóformtjáningu á mismunandi stigum taugaþroska.
+
+Niðurstöður
+Greind voru non-overlapping ísóformsértæk svæði með marktæka auðgun mispörunarstökkbreytinga (FDR<0.05) og hærri tíðni í ClinVar miðað við gnomAD. Fjöldi ísóforma sýndi sértæka tjáningu á ákveðnum stigum taugaþroska.
+
+Ályktanir
+Niðurstöðurnar benda til þess að sértæk ísóform í genum utangenaerfðakerfisins gegni mikilvægu hlutverki í þróun taugaþroskaraskana og að hnitmiðuð greining á ísóformum geti aukið skilning á undirliggjandi meingerð slíkra sjúkdóma.
