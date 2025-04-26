@@ -1,30 +1,18 @@
-# Fetch exons from ensembl
-
 # Load required libraries
 library(biomaRt)
 library(dplyr)
 library(tidyr)
 library(readr)
 
-
 # Connect to Ensembl BioMart using the "www" mirror
 ensembl_mart <- useEnsembl(biomart = "ensembl", 
                            dataset = "hsapiens_gene_ensembl", 
                            mirror = "useast")
 
-# List attributes containing "external_gene_name" for verification
-# all_attrs <- listAttributes(ensembl_mart)
-# gene_attrs <- all_attrs[grep("external_gene_name", all_attrs$name, ignore.case = TRUE), ]
-# print(gene_attrs)
-
-# Define the list of target genes (using their external gene names)
-# gene_symbols.csv was created by downloading all gene symbols https://www.ensembl.org/biomart/martview/
-# there the human gene dataset was chosen and Attributes selected were "Gene name" and under Filters
-# there under Gene type "protein_coding" was chosen then the resulting file contained 23258 genes and
-# the result was saved to .csv file
+# Define the list of target genes
 target_genes <- read_lines("gene_symbols.csv")
 
-# Retrieve Ensembl Gene IDs for target genes using external_gene_name
+# Retrieve Ensembl Gene IDs
 gene_info <- getBM(
   attributes = c("ensembl_gene_id", "external_gene_name"),
   filters = "external_gene_name",
@@ -32,15 +20,11 @@ gene_info <- getBM(
   mart = ensembl_mart
 )
 
-# Check the retrieved gene_info column names
-print(names(gene_info))
-
-# Stop if no genes were found
 if (nrow(gene_info) == 0) {
   stop("No matching genes found in Ensembl. Check spelling or dataset availability.")
 }
 
-# Retrieve transcript data (including transcript length)
+# Retrieve transcript data
 transcript_data <- getBM(
   attributes = c("ensembl_gene_id", "ensembl_transcript_id", "transcript_length"),
   filters = "ensembl_gene_id",
@@ -48,14 +32,14 @@ transcript_data <- getBM(
   mart = ensembl_mart
 )
 
-# Identify canonical transcripts (longest transcript per gene)
+# Identify canonical transcripts
 canonical_transcripts <- transcript_data %>%
   group_by(ensembl_gene_id) %>%
   slice_max(transcript_length, n = 1, with_ties = FALSE) %>%
   ungroup() %>%
   dplyr::select(ensembl_transcript_id)
 
-# Retrieve exon data for all target genes
+# Retrieve exon data
 exon_data <- getBM(
   attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_exon_id",
                  "exon_chrom_start", "exon_chrom_end", "chromosome_name"),
@@ -64,27 +48,20 @@ exon_data <- getBM(
   mart = ensembl_mart
 )
 
-# Merge gene info with exon data to include external gene names
+# Merge exon and gene info
 exons_joined <- merge(exon_data, gene_info, by = "ensembl_gene_id")
 
-# Print column names to check what we have
-print(names(exons_joined))
-
-# Rename columns using base R
+# Rename columns
 colnames(exons_joined)[colnames(exons_joined) == "external_gene_name"] <- "gene"
 colnames(exons_joined)[colnames(exons_joined) == "chromosome_name"] <- "exon_chr"
 colnames(exons_joined)[colnames(exons_joined) == "exon_chrom_start"] <- "exon_start"
 colnames(exons_joined)[colnames(exons_joined) == "exon_chrom_end"] <- "exon_end"
 
-# (Optional) Verify the new names
-print(names(exons_joined))
-
-# Convert exon start and end positions to numeric
+# Convert exon start and end to numeric
 exons_joined$exon_start <- as.numeric(exons_joined$exon_start)
 exons_joined$exon_end   <- as.numeric(exons_joined$exon_end)
 
-# Group by exon and count how many distinct transcripts each exon appears in.
-# Also, annotate isoform type based on whether any of the transcripts is canonical.
+# Find exons unique to one isoform
 unique_exons <- exons_joined %>%
   group_by(ensembl_exon_id, gene, exon_chr, exon_start, exon_end) %>%
   summarize(
@@ -93,17 +70,27 @@ unique_exons <- exons_joined %>%
                           "canonical", "non_canonical"),
     .groups = "drop"
   ) %>%
-  dplyr::filter(n_transcripts == 1)  # Only exons unique to a single isoform
+  dplyr::filter(n_transcripts == 1)
 
-# Save all unique exons (both canonical and non-canonical)
-write.csv(unique_exons, "whole_genome_exons_canonical_and_noncanonical.csv", row.names = FALSE)
+# Now correctly check overlaps within each gene
+non_overlapping_exons <- unique_exons %>%
+  group_by(gene, exon_chr) %>%
+  arrange(exon_start, .by_group = TRUE) %>%
+  mutate(
+    overlap = exon_start < lag(exon_end, default = -Inf)
+  ) %>%
+  ungroup() %>%
+  filter(!overlap)
 
-# Save only canonical unique exons
-canonical_exons_only <- unique_exons %>% filter(isoform_type == "canonical")
-write.csv(canonical_exons_only, "canonical_unique_exons.csv", row.names = FALSE)
+# Save outputs
+write.csv(non_overlapping_exons, "non_overlapping_unique_exons.csv", row.names = FALSE)
 
-cat("✔ All unique exons saved to 'whole_genome_exons_canonical_and_noncanonical.csv'\n")
-cat("✔ Canonical unique exons saved to 'canonical_unique_exons.csv'\n")
+canonical_non_overlapping_exons_only <- non_overlapping_exons %>%
+  filter(isoform_type == "canonical")
+write.csv(canonical_non_overlapping_exons_only, "canonical_non_overlapping_unique_exons.csv", row.names = FALSE)
+
+cat("✔ All non-overlapping unique exons saved to 'non_overlapping_unique_exons.csv'\n")
+cat("✔ Canonical non-overlapping unique exons saved to 'canonical_non_overlapping_unique_exons.csv'\n")
 
 
 
@@ -204,7 +191,7 @@ library(tidyr)
 library(readr)  # For read_csv/read_delim
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv")
+exons <- read_csv("non_overlapping_unique_exons.csv")
 
 target_genes <- read_lines("gene_symbols.csv")
 
@@ -304,12 +291,11 @@ if(nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "whole_genome_exon_clinvar_variant_counts.csv", row.names = FALSE)
-  cat("Exon ClinVar variant counts and densities have been saved to 'whole_genome_exon_clinvar_variant_counts.csv'.\n")
+  write.csv(output, "whole_genome_non_overlapping_exon_clinvar_variant_counts.csv", row.names = FALSE)
+  cat("Exon ClinVar variant counts and densities have been saved to 'whole_genome_non_overlapping_exon_clinvar_variant_counts.csv'.\n")
 } else {
   cat("No exons with Pathogenic or Likely Pathogenic variants were found.\n")
 }
-
 
 
 
@@ -434,14 +420,14 @@ missense_variants_df <- bind_rows(Filter(Negate(is.null), missense_variants_list
 
 
 # GnomAd missense variant count in each unique exon
-                       
+
 # Load required libraries
 library(dplyr)
 library(tidyr)
 library(readr)  # For read_csv
 
 # ---- 1. Read Exon Data (already contains necessary columns) ----
-exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv")
+exons <- read_csv("non_overlapping_unique_exons.csv")
 
 target_genes <- read_lines("gene_symbols.csv")
 
@@ -531,8 +517,8 @@ if (nrow(final_results) > 0) {
   output <- final_results %>%
     dplyr::select(gene, ensembl_exon_id, exon_chr, exon_start, exon_end, isoform_type, variant_count, variant_density)
   
-  write.csv(output, "whole_genome_exon_gnomad_variant_counts.csv", row.names = FALSE)
-  cat("Exon gnomAD variant counts and densities have been saved to 'whole_genome_exon_gnomad_variant_counts.csv'.\n")
+  write.csv(output, "whole_genome_non_overlapping_exon_gnomad_variant_counts.csv", row.names = FALSE)
+  cat("Exon gnomAD variant counts and densities have been saved to 'whole_genome_non_overlapping_exon_gnomad_variant_counts.csv'.\n")
 } else {
   cat("No exons with variants were found in the gnomAD files.\n")
 }
@@ -549,30 +535,28 @@ if (nrow(final_results) > 0) {
 
 
 
-
                        
-
-# Whole-genome Fisher test with robust output handling and case-sensitive gene symbol parsing
 
 library(dplyr)
 library(readr)
 
-# Load input data
-clinvar_df <- read_csv("whole_genome_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
-gnomad_df <- read_csv("whole_genome_exon_gnomad_variant_counts.csv", show_col_types = FALSE)
-all_exons <- read_csv("whole_genome_exons_canonical_and_noncanonical.csv", show_col_types = FALSE)
+# Load data
+clinvar_df <- read_csv("whole_genome_non_overlapping_exon_clinvar_variant_counts.csv", show_col_types = FALSE) %>%
+  mutate(gene = trimws(gene))
+gnomad_df <- read_csv("whole_genome_non_overlapping_exon_gnomad_variant_counts.csv", show_col_types = FALSE) %>%
+  mutate(gene = trimws(gene))
+all_exons <- read_csv("non_overlapping_unique_exons.csv", show_col_types = FALSE)
 
-# Ensure consistent trimming of gene names
-clinvar_df <- clinvar_df %>% mutate(gene = trimws(gene))
-gnomad_df <- gnomad_df %>% mutate(gene = trimws(gene))
-
-# Merge ClinVar and gnomAD counts
+# Merge exon-level variant counts
 merged_variants <- full_join(clinvar_df, gnomad_df,
                              by = c("gene", "ensembl_exon_id", "exon_chr", "exon_start", "exon_end", "isoform_type"),
                              suffix = c("_clinvar", "_gnomad")) %>%
-  mutate(across(c(variant_count_clinvar, variant_count_gnomad), ~replace_na(., 0)))
+  mutate(
+    variant_count_clinvar = replace_na(variant_count_clinvar, 0),
+    variant_count_gnomad = replace_na(variant_count_gnomad, 0)
+  )
 
-# Get per-gene totals
+# Calculate per-gene total counts
 total_variant_counts <- merged_variants %>%
   group_by(gene) %>%
   summarize(
@@ -581,7 +565,7 @@ total_variant_counts <- merged_variants %>%
     .groups = "drop"
   )
 
-# Add totals to exon-level data
+# Merge totals into exon data
 merged_variants <- merged_variants %>%
   left_join(total_variant_counts, by = "gene") %>%
   mutate(
@@ -591,57 +575,53 @@ merged_variants <- merged_variants %>%
     d = total_gnomad_gene - c
   )
 
-# Run Fisher's exact test and compute odds ratios
+# Perform Fisher's exact test
 fisher_results <- merged_variants %>%
   rowwise() %>%
   mutate(
-    fisher_stats = list(
+    fisher_output = list(
       tryCatch({
         mat <- matrix(c(a, b, c, d), nrow = 2)
         fisher.test(mat)
       }, error = function(e) NULL)
     ),
-    fisher_p = if (!is.null(fisher_stats) && !is.null(fisher_stats$p.value)) fisher_stats$p.value else NA_real_,
-    odds_ratio = if (!is.null(fisher_stats) && !is.null(fisher_stats$estimate)) unname(fisher_stats$estimate[[1]]) else NA_real_
+    fisher_p = if (!is.null(fisher_output)) fisher_output$p.value else NA_real_,
+    odds_ratio = if (!is.null(fisher_output)) unname(fisher_output$estimate[[1]]) else NA_real_
   ) %>%
   ungroup()
 
-
-# FDR correction
+# Apply FDR correction
 fisher_results <- fisher_results %>%
   mutate(fdr = p.adjust(fisher_p, method = "fdr"))
 
-# Export results
+# Select relevant columns
 fisher_results_limited <- fisher_results %>%
   dplyr::select(
-    gene,
-    ensembl_exon_id,
-    isoform_type,
+    gene, ensembl_exon_id, isoform_type,
     variant_count_clinvar = a,
     variant_count_gnomad = c,
-    fisher_p,
-    fdr,
-    odds_ratio
+    fisher_p, fdr, odds_ratio
   )
 
-write_csv(fisher_results_limited, "whole_genome_exon_fisher_enrichment_results.csv")
-cat("✔ Fisher's exact test results saved to 'whole_genome_exon_fisher_enrichment_results.csv'\n")
+# Save full exon-level results
+write_csv(fisher_results_limited, "whole_genome_non_overlapping_exon_fisher_enrichment_results.csv")
+cat("✔ Fisher's test results saved: 'whole_genome_non_overlapping_exon_fisher_enrichment_results.csv'\n")
 
-# Identify significant genes
+# Find significant genes (FDR < 0.05, best exon per gene)
 significant_genes <- fisher_results_limited %>%
   filter(fdr < 0.05) %>%
   group_by(gene) %>%
   slice_min(order_by = fdr, with_ties = FALSE) %>%
   ungroup()
 
-write_csv(significant_genes, "whole_genome_genes_with_significant_exons.csv")
-cat("✔ Significant gene list saved to 'whole_genome_genes_with_significant_exons.csv'\n")
+write_csv(significant_genes, "whole_genome_genes_with_significant_non_overlapping_exons.csv")
+cat("✔ Significant genes saved: 'whole_genome_genes_with_significant_non_overlapping_exons.csv'\n")
 
-# Rank significant exons by odds ratio
+# Prioritize exons (FDR < 0.05 and odds ratio > 2)
 prioritized_exons <- fisher_results_limited %>%
   filter(fdr < 0.05, odds_ratio > 2) %>%
   mutate(avg_rank_score = rank(fdr) + rank(-odds_ratio)) %>%
   arrange(avg_rank_score)
 
-write_csv(prioritized_exons, "whole_genome_exons_prioritized_by_fdr_and_ratio.csv")
-cat("✔ Prioritized exons saved to 'whole_genome_exons_prioritized_by_fdr_and_ratio.csv'\n")
+write_csv(prioritized_exons, "whole_genome_non_overlapping_exons_prioritized_by_fdr_and_ratio.csv")
+cat("✔ Prioritized exons saved: 'whole_genome_non_overlapping_exons_prioritized_by_fdr_and_ratio.csv'\n")
