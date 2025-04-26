@@ -4,7 +4,7 @@ library(readr)
 library(dplyr)
 
 # 1. Load ranked EM gene data
-ranked <- read_csv("EM_genes_intersected_genes_ranked_by_composite_score.csv", show_col_types = FALSE)
+ranked <- read_csv("EM_genes_non_overlapping_intersected_genes_ranked_by_composite_score.csv", show_col_types = FALSE)
 
 # 2. Compute plotting metrics
 ranked <- ranked %>%
@@ -54,5 +54,5 @@ if (!any(ranked$is_infinite)) {
 }
 
 # 6. Save and show plot
-ggsave("em_genes_composite_plot_shapes_conditional_legend.pdf", plot = em_plot, width = 10, height = 6, dpi = 300)
+ggsave("em_genes_non_overlapping_composite_plot_shapes_conditional_legend.pdf", plot = em_plot, width = 10, height = 6, dpi = 300)
 print(em_plot)
