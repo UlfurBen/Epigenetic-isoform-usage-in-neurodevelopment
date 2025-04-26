@@ -2,7 +2,7 @@ library(readr)
 library(dplyr)
 
 # 1. Load exon-level data (prioritized by odds ratio)
-exon_data <- read_csv("whole_genome_exons_prioritized_by_fdr_and_ratio.csv", show_col_types = FALSE) %>%
+exon_data <- read_csv("whole_genome_non_overlapping_exons_prioritized_by_fdr_and_ratio.csv", show_col_types = FALSE) %>%
   mutate(gene = trimws(gene))
 
 # 2. Get the exon with highest odds ratio (or lowest FDR if tied)
@@ -42,8 +42,8 @@ ranked <- merged %>%
   arrange(desc(composite_score))
 
 # 6. Save top results
-write_csv(ranked, "intersected_genes_ranked_by_composite_score.csv")
+write_csv(ranked, "intersected_non_overlapping_genes_ranked_by_composite_score.csv")
 
 # 7. Show summary
-cat("✅ Intersected genes saved to 'intersected_genes_ranked_by_composite_score.csv'\n")
+cat("✅ Intersected genes saved to 'intersected_non_overlapping_genes_ranked_by_composite_score.csv'\n")
 print(head(ranked %>% dplyr::select(gene_name, isoform_fdr, exon_fdr, odds_ratio, composite_score), 10))
