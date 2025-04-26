@@ -2,7 +2,7 @@ library(readr)
 library(dplyr)
 
 # 1. Load exon-level data prioritized by FDR and odds ratio
-exon_data <- read_csv("EM_genes_exons_prioritized_by_fdr_and_oddsratio.csv", show_col_types = FALSE) %>%
+exon_data <- read_csv("EM_genes_non_overlapping_exons_prioritized_by_fdr_and_oddsratio.csv", show_col_types = FALSE) %>%
   mutate(gene = trimws(gene))
 
 # 2. Filter to top exon hit per gene (highest odds ratio, tie-breaker by lowest FDR)
@@ -14,7 +14,7 @@ exon_top_hits <- exon_data %>%
   dplyr::select(gene, exon_fdr = fdr, odds_ratio)
 
 # 3. Load isoform-level expression data (significant DE isoforms only)
-isoform_data <- read_csv("em_significant_isoforms_fdr_below_0.05_fc_above_2.csv", show_col_types = FALSE) %>%
+isoform_data <- read_csv("isoform_significant_with_npc_fdr_fc.csv", show_col_types = FALSE) %>%
   mutate(gene_name = trimws(gene_name)) %>%
   filter(!is.na(fdr)) %>%
   group_by(gene_name) %>%
@@ -38,8 +38,8 @@ ranked <- merged %>%
   arrange(desc(composite_score))
 
 # 6. Save top results
-write_csv(head(ranked, 10), "EM_genes_intersected_genes_ranked_by_composite_score.csv")
+write_csv(head(ranked, 10), "EM_genes_non_overlapping_intersected_genes_ranked_by_composite_score.csv")
 
 # 7. Print summary
-cat("✅ Intersected and ranked EM genes saved to 'EM_genes_intersected_genes_ranked_by_composite_score.csv'\n")
+cat("✅ Intersected and ranked EM genes saved to 'EM_genes_non_overlapping_intersected_genes_ranked_by_composite_score.csv'\n")
 print(head(ranked %>% dplyr::select(gene_name, isoform_fdr, exon_fdr, odds_ratio, composite_score), 10))
