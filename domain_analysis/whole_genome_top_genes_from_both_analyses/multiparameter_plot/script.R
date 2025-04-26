@@ -4,7 +4,7 @@ library(readr)
 library(dplyr)
 
 # 1. Load the ranked data
-ranked <- read_csv("intersected_genes_ranked_by_composite_score.csv", show_col_types = FALSE)
+ranked <- read_csv("intersected_non_overlapping_genes_ranked_by_composite_score.csv", show_col_types = FALSE)
 
 # 2. Compute -log10(min FDR), log2(odds ratio), and flag infinite ORs
 ranked <- ranked %>%
@@ -55,5 +55,5 @@ if (!any(ranked$is_infinite)) {
 }
 
 # 6. Save and show plot
-ggsave("multiparameter_gene_scoring_plot_with_shapes.pdf", plot = whole_plot, width = 10, height = 6, dpi = 300)
+ggsave("multiparameter_non_overlapping_gene_scoring_plot_with_shapes.pdf", plot = whole_plot, width = 10, height = 6, dpi = 300)
 print(whole_plot)
