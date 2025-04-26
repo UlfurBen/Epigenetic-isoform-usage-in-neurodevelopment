@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 
 # Load the CSV
-df = pd.read_csv("EM_genes_exon_clinvar_gnomad_ratio_output.csv")
+df = pd.read_csv("EM_genes_non_overlapping_exon_clinvar_gnomad_ratio_output.csv")
 
 # Recompute ratio just to be sure
 df["clinvar_gnomad_ratio"] = df["variant_count_clinvar"] / (df["variant_count_gnomad"] + 1e-6)
@@ -16,18 +16,18 @@ df_sorted = df.sort_values(by=["exon_chr_numeric", "exon_start"]).reset_index(dr
 
 # Assign color based on isoform type
 df_sorted["color"] = df_sorted["isoform_type"].map({
-    "canonical": "black",
-    "non_canonical": "red"
+  "canonical": "black",
+  "non_canonical": "red"
 })
 
 # Plot
 plt.figure(figsize=(18, 6))
 plt.scatter(
-    x=df_sorted.index,
-    y=df_sorted["clinvar_gnomad_ratio"],
-    c=df_sorted["color"],
-    alpha=0.7,
-    label=None
+  x=df_sorted.index,
+  y=df_sorted["clinvar_gnomad_ratio"],
+  c=df_sorted["color"],
+  alpha=0.7,
+  label=None
 )
 
 # Add reference line at y = 1
@@ -39,16 +39,16 @@ plt.gca().yaxis.set_major_formatter(ticker.LogFormatter())
 
 # Annotate exons with ratio > 10^4
 for i, row in df_sorted.iterrows():
-    if row["clinvar_gnomad_ratio"] > 1e4:
-        plt.annotate(
-            row["gene"],
-            (i, row["clinvar_gnomad_ratio"]),
-            textcoords="offset points",
-            xytext=(0, 5),
-            ha='center',
-            fontsize=8,
-            rotation=45
-        )
+  if row["clinvar_gnomad_ratio"] > 1e4:
+    plt.annotate(
+      row["gene"],
+      (i, row["clinvar_gnomad_ratio"]),
+      textcoords="offset points",
+      xytext=(0, 5),
+      ha='center',
+      fontsize=8,
+      rotation=45
+  )
 
 # Styling
 plt.xlabel("Exons (sorted by genomic position)")
@@ -64,5 +64,5 @@ plt.legend()
 plt.tight_layout(pad=3.0)
 
 # Save and show
-plt.savefig("EM_genes_clinvar_gnomad_ratio_by_genomic_position_colored.png", dpi=300)
+plt.savefig("EM_genes_non_overlapping_clinvar_gnomad_ratio_by_genomic_position_colored.png", dpi=300)
 plt.show()
