@@ -29,16 +29,19 @@ merged <- inner_join(
   by = c("gene_name_lower" = "gene_lower")
 )
 
-# 5. Compute composite score with log protections
+# 5. Compute composite score with capped log2 odds ratio
 ranked <- merged %>%
   mutate(
-    composite_score = -log10(isoform_fdr + 1e-10) + -log10(exon_fdr + 1e-10) + log2(odds_ratio + 1e-6),
-    min_fdr = pmin(isoform_fdr, exon_fdr)
+    log10_isoform_fdr = -log10(isoform_fdr + 1e-10),
+    log10_exon_fdr    = -log10(exon_fdr + 1e-10),
+    log2_odds_ratio   = pmin(log2(odds_ratio + 1e-6), 10),  # Cap at log2(1024)
+    composite_score   = log10_isoform_fdr + log10_exon_fdr + log2_odds_ratio,
+    min_fdr           = pmin(isoform_fdr, exon_fdr)
   ) %>%
   arrange(desc(composite_score))
 
 # 6. Save top results
-write_csv(head(ranked, 10), "EM_genes_non_overlapping_intersected_genes_ranked_by_composite_score.csv")
+write_csv(ranked, "EM_genes_non_overlapping_intersected_genes_ranked_by_composite_score.csv")
 
 # 7. Print summary
 cat("✅ Intersected and ranked EM genes saved to 'EM_genes_non_overlapping_intersected_genes_ranked_by_composite_score.csv'\n")
