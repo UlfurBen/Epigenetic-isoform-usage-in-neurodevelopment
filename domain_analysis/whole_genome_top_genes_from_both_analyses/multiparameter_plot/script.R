@@ -29,7 +29,7 @@ whole_plot <- ggplot(ranked, aes(x = log2_odds_ratio, y = neg_log10_min_fdr,
     labels = c("FALSE" = "Finite", "TRUE" = "Infinite")
   ) +
   labs(
-    title = "Composite scoring of exon + isoform significant genes",
+    title = "Composite scoring of whole genome",
     subtitle = "Color = composite score, Shape = infinite vs finite odds ratio",
     x = "log2(Odds Ratio)",
     y = "-log10(FDR) (min of isoform & exon)",
@@ -57,3 +57,4 @@ if (!any(ranked$is_infinite)) {
 # 6. Save and show plot
 ggsave("multiparameter_non_overlapping_gene_scoring_plot_with_shapes.pdf", plot = whole_plot, width = 10, height = 6, dpi = 300)
 print(whole_plot)
+
