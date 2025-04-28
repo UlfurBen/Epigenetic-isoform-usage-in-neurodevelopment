@@ -23,7 +23,7 @@ top10 <- ranked %>% slice_max(order_by = composite_score, n = 10)
 whole_plot <- ggplot(ranked, aes(x = log2_odds_ratio, y = neg_log10_min_fdr,
                                  color = composite_score, shape = is_infinite)) +
   geom_point(size = 3.5, alpha = 0.85) +
-  scale_color_gradient(low = "gray80", high = "purple3") +
+  scale_color_gradient(low = "gray80", high = "darkred") +
   scale_shape_manual(
     values = c("FALSE" = 16, "TRUE" = 17),
     labels = c("FALSE" = "Finite", "TRUE" = "Infinite")
