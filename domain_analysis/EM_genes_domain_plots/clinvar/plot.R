@@ -166,7 +166,7 @@ plot_lollipop <- ggplot() +
     expand = c(0, 0)
   ) +
   scale_fill_manual(name = "Pfam Domains", values = domain_colors) +
-  ggtitle("Pathogenic Missense Variants in CHD3 (Pfam Domains + Canonical Exons)") +
+  ggtitle("Pathogenic Missense Variants in CHD3 (Pfam Domains + Unique Non-Canonical Exons)") +
   custom_theme
 
 ###############################################################################
