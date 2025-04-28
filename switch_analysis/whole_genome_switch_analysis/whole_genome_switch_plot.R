@@ -88,8 +88,8 @@ create_plot <- function(plot_data, title_text) {
 }
 
 # Create both plots
-p1 <- create_plot(plot_data_incl_npc, "Top 10 Significant Isoforms (Including NPC-high Isoforms)")
-p2 <- create_plot(plot_data_excl_npc, "Top 10 Significant Isoforms (Excluding NPC-high Isoforms)")
+p1 <- create_plot(plot_data_npc_high, "Top 10 Isoforms (NPC Highest Expression, Whole Genome)")
+p2 <- create_plot(plot_data_not_npc_high, "Top 10 Isoforms (Day3/6/12 Highest Expression, Whole Genome)")
 
 # Save to PDF side-by-side
 pdf("top_significant_isoform_expression_side_by_side.pdf", width = 16, height = 10)
