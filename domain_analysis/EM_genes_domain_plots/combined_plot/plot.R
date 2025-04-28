@@ -4,6 +4,7 @@ library(dplyr)
 library(stringr)
 library(tidyr)
 library(ggplot2)
+library(biomaRt)
 
 # -------------------------------
 # 1. Load and clean ClinVar data
@@ -46,38 +47,98 @@ domain_data <- domains_raw %>%
   dplyr::select(Name, Start, End)
 
 # -------------------------------
-# 4. Count variants per domain (with "Non-domain")
+# 4. Load Non-canonical unique exon regions (biomaRt)
 # -------------------------------
-count_variants_in_domains <- function(variant_df, source_name) {
-  variant_with_domain <- variant_df %>%
+ensembl_mart <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
+
+gene_info <- getBM(
+  attributes = c("ensembl_gene_id", "external_gene_name"),
+  filters = "external_gene_name",
+  values = "CHD3",
+  mart = ensembl_mart
+)
+
+transcript_data <- getBM(
+  attributes = c("ensembl_gene_id", "ensembl_transcript_id", "transcript_length"),
+  filters = "ensembl_gene_id",
+  values = gene_info$ensembl_gene_id,
+  mart = ensembl_mart
+)
+
+canonical_transcripts <- transcript_data %>%
+  group_by(ensembl_gene_id) %>%
+  slice_max(transcript_length, n = 1, with_ties = FALSE) %>%
+  ungroup() %>%
+  dplyr::select(ensembl_transcript_id)
+
+exon_data_full <- getBM(
+  attributes = c("ensembl_gene_id", "ensembl_transcript_id", "ensembl_exon_id", "cds_start", "cds_end"),
+  filters = "ensembl_gene_id",
+  values = gene_info$ensembl_gene_id,
+  mart = ensembl_mart
+) %>%
+  filter(!is.na(cds_start), !is.na(cds_end)) %>%
+  mutate(
+    Start = as.numeric(cds_start) %/% 3,
+    End = as.numeric(cds_end) %/% 3
+  )
+
+noncanonical_unique_exons <- exon_data_full %>%
+  group_by(ensembl_exon_id) %>%
+  summarise(
+    Start = min(Start),
+    End = max(End),
+    n_transcripts = n_distinct(ensembl_transcript_id),
+    is_canonical = any(ensembl_transcript_id %in% canonical_transcripts$ensembl_transcript_id),
+    .groups = "drop"
+  ) %>%
+  filter(n_transcripts == 1, !is_canonical) %>%
+  arrange(Start) %>%
+  mutate(overlap = Start < lag(End, default = -Inf)) %>%
+  filter(!overlap) %>%
+  dplyr::select(Start, End)
+
+# -------------------------------
+# 5. Count variants per domain/non-canonical exon
+# -------------------------------
+count_variants_in_domains_and_exons <- function(variant_df, source_name) {
+  variant_with_annotations <- variant_df %>%
     rowwise() %>%
     mutate(
-      Domains = paste(domain_data$Name[PROTEIN_POS >= domain_data$Start & PROTEIN_POS <= domain_data$End], collapse = ",")
+      Domains = paste(domain_data$Name[PROTEIN_POS >= domain_data$Start & PROTEIN_POS <= domain_data$End], collapse = ","),
+      In_noncanonical_exon = any(PROTEIN_POS >= noncanonical_unique_exons$Start & PROTEIN_POS <= noncanonical_unique_exons$End)
     ) %>%
     ungroup()
   
-  # Split into domain and non-domain
-  in_domain <- variant_with_domain %>%
+  # Variants in domains
+  in_domain <- variant_with_annotations %>%
     filter(Domains != "") %>%
     separate_rows(Domains, sep = ",") %>%
     group_by(Domains) %>%
     summarise(Count = n(), .groups = "drop") %>%
     rename(Domain = Domains)
   
-  non_domain <- variant_with_domain %>%
-    filter(Domains == "" | is.na(Domains)) %>%
+  # Variants in non-canonical exons but *not* inside domains
+  in_noncanonical_exon <- variant_with_annotations %>%
+    filter(Domains == "", In_noncanonical_exon) %>%
+    summarise(Count = n()) %>%
+    mutate(Domain = "Non-canonical Unique Exon")
+  
+  # Remaining variants (neither domain nor non-canonical exon)
+  non_domain <- variant_with_annotations %>%
+    filter(Domains == "", !In_noncanonical_exon) %>%
     summarise(Count = n()) %>%
     mutate(Domain = "Non-domain")
   
-  bind_rows(in_domain, non_domain) %>%
+  bind_rows(in_domain, in_noncanonical_exon, non_domain) %>%
     mutate(Source = source_name)
 }
 
-clinvar_counts <- count_variants_in_domains(clinvar_variants, "ClinVar")
-gnomad_counts  <- count_variants_in_domains(gnomad_variants,  "gnomAD")
+clinvar_counts <- count_variants_in_domains_and_exons(clinvar_variants, "ClinVar")
+gnomad_counts  <- count_variants_in_domains_and_exons(gnomad_variants,  "gnomAD")
 
 # -------------------------------
-# 5. Calculate percentages
+# 6. Calculate percentages
 # -------------------------------
 clinvar_total <- nrow(clinvar_variants)
 gnomad_total  <- nrow(gnomad_variants)
@@ -92,7 +153,7 @@ gnomad_counts <- gnomad_counts %>%
 combined_df <- bind_rows(clinvar_counts, gnomad_counts)
 
 # -------------------------------
-# 6. Plot
+# 7. Plot
 # -------------------------------
 ggplot(combined_df, aes(x = reorder(Domain, -Percent), y = Percent, color = Source)) +
   geom_point(size = 3, alpha = 0.9) +
@@ -101,8 +162,8 @@ ggplot(combined_df, aes(x = reorder(Domain, -Percent), y = Percent, color = Sour
     labels = c("ClinVar" = "ClinVar Pathogenic And/Or Likely Pathogenic Missense Variants", "gnomAD" = "gnomAD")
   ) +
   labs(
-    title = "Percent of Missense Variants in Pfam Domains for CHD3",
-    x = "Domain (including Non-domain)",
+    title = "Percent of Missense Variants in Pfam Domains and Non-Canonical Exons (CHD3)",
+    x = "Domain / Exon Category",
     y = "Percent of Variants",
     color = "Variant Source"
   ) +
@@ -113,4 +174,4 @@ ggplot(combined_df, aes(x = reorder(Domain, -Percent), y = Percent, color = Sour
   )
 
 # Save
-ggsave("EM_genes_variant_percent_by_domain_with_nondomain.png", width = 11, height = 5, dpi = 300)
+ggsave("EM_genes_variant_percent_by_domain_and_noncanoexon.png", width = 11, height = 5, dpi = 300)
