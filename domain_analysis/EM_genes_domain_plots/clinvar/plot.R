@@ -126,14 +126,14 @@ plot_lollipop <- ggplot() +
   
   # Canonical exons as low gray bars
   geom_rect(
-    data = exon_data,
+    data = noncanonical_unique_exons,
     aes(xmin = Start, xmax = End, ymin = -domain_height - exon_bar_height, ymax = -domain_height),
     fill = "gray90", color = "black", alpha = 0.8, inherit.aes = FALSE
   ) +
   
   # Exon labels
   geom_text(
-    data = exon_data,
+    data = noncanonical_unique_exons,
     aes(x = (Start + End) / 2, y = -domain_height - exon_bar_height - label_offset * 0.5, label = Exon_Label),
     size = 2.8, angle = 45, hjust = 1, vjust = 1, inherit.aes = FALSE
   ) +
