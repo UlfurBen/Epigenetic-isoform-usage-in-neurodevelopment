@@ -5,6 +5,7 @@
 
 library(dplyr)
 library(readr)
+library(tidyr)
 
 # Load inputs
 clinvar <- read_csv("EM_genes_non_overlapping_exon_clinvar_variant_counts.csv", show_col_types = FALSE)
