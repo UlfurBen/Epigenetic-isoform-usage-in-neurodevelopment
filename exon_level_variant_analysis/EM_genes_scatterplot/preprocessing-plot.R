@@ -22,6 +22,29 @@ merged <- merged %>%
     clinvar_gnomad_ratio = variant_count_clinvar / (variant_count_gnomad + 1e-6)  # avoid division by zero
   )
 
+# Aggregate ClinVar and gnomAD variant counts by isoform type
+agg_counts <- merged %>%
+  group_by(isoform_type) %>%
+  summarise(
+    clinvar_total = sum(variant_count_clinvar, na.rm = TRUE),
+    gnomad_total = sum(variant_count_gnomad, na.rm = TRUE)
+  ) %>%
+  mutate(total_variants = clinvar_total + gnomad_total)
+
+# View aggregated counts
+print(agg_counts)
+
+# Extract counts
+canonical <- filter(agg_counts, isoform_type == "canonical")
+noncanonical <- filter(agg_counts, isoform_type == "non-canonical")
+
+# Run proportion test
+prop.test(
+  x = c(noncanonical$clinvar_total, canonical$clinvar_total),  # successes
+  n = c(noncanonical$total_variants, canonical$total_variants),  # trials
+  alternative = "greater"  # test if non-canonical has a greater ClinVar proportion
+)
+
 # Save to file
 write_csv(merged, "EM_genes_non_overlapping_exon_clinvar_gnomad_ratio_output.csv")
 cat("✔ Saved ClinVar/gnomAD ratio data with constraint scores to 'EM_genes_non_overlapping_exon_clinvar_gnomad_ratio_output.csv'\n")
