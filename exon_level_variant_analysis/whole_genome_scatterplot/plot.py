@@ -56,7 +56,7 @@ for i, row in df_sorted.iterrows():
 # Styling
 plt.xlabel("Exons (sorted by genomic position)")
 plt.ylabel("ClinVar / gnomAD variant ratio (log scale)")
-plt.title("ClinVar/gnoMAD Variant Ratios Across EM Gene Exons")
+plt.title("ClinVar/gnoMAD Variant Ratios Across Whole Genome Exons")
 plt.grid(True, which="both", axis='y', linestyle='--', alpha=0.5)
 
 # Add custom legend manually
