@@ -68,7 +68,7 @@ volcano_plot <- ggplot(combined_df, aes(x = log2FC, y = -log10(fdr))) +
   facet_wrap(~comparison, scales = "free", ncol = 2) +
   theme_minimal(base_size = 13) +
   labs(
-    title = "Whole GenomeFaceted Volcano Plot of Isoform Expression",
+    title = "Whole Genome Faceted Volcano Plot of Isoform Expression",
     x = "log2(Fold Change)",
     y = "-log10(FDR)"
   )
