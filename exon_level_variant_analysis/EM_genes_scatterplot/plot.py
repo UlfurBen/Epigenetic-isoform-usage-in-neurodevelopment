@@ -16,18 +16,18 @@ df_sorted = df.sort_values(by=["exon_chr_numeric", "exon_start"]).reset_index(dr
 
 # Assign color based on isoform type
 df_sorted["color"] = df_sorted["isoform_type"].map({
-  "canonical": "black",
-  "non_canonical": "red"
+    "canonical": "black",
+    "non_canonical": "red"
 })
 
 # Plot
 plt.figure(figsize=(18, 6))
 plt.scatter(
-  x=df_sorted.index,
-  y=df_sorted["clinvar_gnomad_ratio"],
-  c=df_sorted["color"],
-  alpha=0.7,
-  label=None
+    x=df_sorted.index,
+    y=df_sorted["clinvar_gnomad_ratio"],
+    c=df_sorted["color"],
+    alpha=0.7,
+    label=None
 )
 
 # Add reference line at y = 1
@@ -39,27 +39,29 @@ plt.gca().yaxis.set_major_formatter(ticker.LogFormatter())
 
 # Annotate exons with ratio > 10^4
 for i, row in df_sorted.iterrows():
-  if row["clinvar_gnomad_ratio"] > 1e4:
-    plt.annotate(
-      row["gene"],
-      (i, row["clinvar_gnomad_ratio"]),
-      textcoords="offset points",
-      xytext=(0, 5),
-      ha='center',
-      fontsize=8,
-      rotation=45
-  )
+    if row["clinvar_gnomad_ratio"] > 1e4:
+        plt.annotate(
+            row["gene"],
+            (i, row["clinvar_gnomad_ratio"]),
+            textcoords="offset points",
+            xytext=(0, 10),
+            ha='center',
+            fontsize=10,
+            rotation=45
+        )
 
-# Styling
-plt.xlabel("Exons (sorted by genomic position)")
-plt.ylabel("ClinVar / gnomAD variant ratio (log scale)")
-plt.title("ClinVar/gnoMAD Variant Ratios Across EM Gene Exons")
+# Styling with larger fonts
+plt.xlabel("Exons (sorted by genomic position)", fontsize=14)
+plt.ylabel("ClinVar / gnomAD variant ratio (log scale)", fontsize=14)
+plt.title("ClinVar/gnoMAD Variant Ratios Across EM Gene Exons", fontsize=16)
+plt.xticks(fontsize=12)
+plt.yticks(fontsize=12)
 plt.grid(True, which="both", axis='y', linestyle='--', alpha=0.5)
 
 # Add custom legend manually
 plt.scatter([], [], c="black", label="Canonical exons")
 plt.scatter([], [], c="red", label="Non-canonical exons")
-plt.legend()
+plt.legend(fontsize=12)
 
 plt.tight_layout(pad=3.0)
 
