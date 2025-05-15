@@ -1,18 +1,13 @@
-Notkun mismunandi ísóforma utangenaerfðakerfisins við taugaþroska og mikilvægi þeirra í sjúkdómum tengdum utangenaerfðakerfinu
-Úlfur Benedikt Fjölnisson¹, Katrín Möller¹, Hans Tómas Björnsson¹
-¹Læknadeild Háskóla Íslands, Reykjavík, Ísland
-
-Inngangur
-Stökkbreytingar í genum utangenaerfðakerfisins valda oftast taugaþroskaröskunum. Þekking á ísóform-sértækri notkun þessara gena og dreifingu mispörunarstökkbreytinga gæti varpað ljósi á undirliggjandi sjúkdómsferla.
-
-Markmið
-Að kanna hvort mispörunarstökkbreytingar safnist í sértækum ísóformum, hvort þessi ísóform hafi sérstaka tjáningu í taugaþroska og hvort þau gegni lykilhlutverki í sjúkdómum sem tengjast utangenaerfðakerfinu.
-
-Aðferðir
-Gögn voru sótt úr ClinVar og gnomAD gagnagrunnum til að meta dreifingu mispörunarstökkbreytinga á ísóformum 60 utangenaerfðagena. Notuð voru Fisher próf til að meta marktæka auðgun stökkbreytinga í sértækum ísóformsvæðum. RNA-raðgreiningargögn úr taugaþroskamódeli músar voru greind með IsoformSwitchAnalyzeR til að kanna sértæka ísóformtjáningu á mismunandi stigum taugaþroska.
-
-Niðurstöður
-Greind voru non-overlapping ísóformsértæk svæði með marktæka auðgun mispörunarstökkbreytinga (FDR<0.05) og hærri tíðni í ClinVar miðað við gnomAD. Fjöldi ísóforma sýndi sértæka tjáningu á ákveðnum stigum taugaþroska.
-
-Ályktanir
-Niðurstöðurnar benda til þess að sértæk ísóform í genum utangenaerfðakerfisins gegni mikilvægu hlutverki í þróun taugaþroskaraskana og að hnitmiðuð greining á ísóformum geti aukið skilning á undirliggjandi meingerð slíkra sjúkdóma.
+Isoform-Specific Genetic Analysis of Epigenetic Machinery Genes in Neurodevelopment and Disease
+Úlfur Benedikt Fjölnisson1, Katrín Möller1, Hans Tómas Björnsson1,2,3 
+1: Department of Medicine University of Iceland, Reykjavík, Ísland; 2: Johns Hopkins University, Baltimore, USA 3: University Hospital, Reykjavík, Iceland
+Introduction
+Missense mutations in epigenetic machinery (EM) genes are frequently associated with neurodevelopmental disorders. Studying the isoform-specific distribution of pathogenic variants and the timing of isoform expression may reveal critical mechanisms underlying these diseases.
+Aims of the project
+To determine whether pathogenic missense variants are enriched in coding material unique to non-canonical isoforms and whether these isoforms show stage-specific expression during neurodevelopment.
+Methods
+Data from ClinVar, gnomAD, and Ensembl BioMart data were used to compute missense variant densities in non-overlapping exons unique to a single isoform of EM genes and genome-wide. Whole-genome gnomAD data were used instead of exome data to ensure coverage of non-canonical exons, which are often underrepresented in exome sequencing. Fisher’s exact test with a FDR correction was used to identify exons enriched for pathogenic ClinVar variants. Isoform expression usage across neural progenitor cells (NPC), Day 3, Day 6, and Day 12 of mouse neurodevelopment was analyzed using ANOVA and Tukey’s HSD. A composite score combining expression significance and variant enrichment was used to prioritize candidate genes.
+Results
+The gene CHD3 ranked highest among genes from the whole genome analysis with a finite odds ratio. Its non-canonical isoform ENST00000682063 was also significantly upregulated on Day 12 of neurodevelopment. Pathogenic ClinVar missense variants were concentrated in specific protein domains of CHD3.
+Conclusion
+A non-canonical CHD3 isoform is upregulated during late neurodevelopment may explain why CHD3-related disorders lead to neurological symptoms. This work highlights the utility of considering transcript usage when doing variant analysis in uncovering overlooked disease mechanisms.
