@@ -1,6 +1,6 @@
 # Epigenetic-isoform-notkun-í-taugaþroska
-Bachelor verkefni í læknisfræði sem miðar að því að finna epigenetic isoform svæði með hárri tíðni mispörunarbreytinga og skoða notkun þeirra í taugaþroska.
-Þetta repository mun documenta skrefin sem eru tekin í file **project documentation**.
+Bachelor verkefni í læknisfræðinámi við Háskóla Íslands við Heilbrigðisvísindasvið sem miðar að því að finna svæði á ísóform utangenaerfðakerfisins með háa tíðni sjúkdómsvaldandi mispörunarbreytingar og skoða notkun ísóformanna í taugaþroska.
+This repository contains all the code used in the project.
 Mest megnis verður unnið með gögn í UCSC genome browser en allur code verður geymdur í folder **code**.
 Áætluð tímaáætlun:
   18.feb – 29. Feb (10 vikur)
@@ -15,7 +15,7 @@ Mest megnis verður unnið með gögn í UCSC genome browser en allur code verð
   Skoðað verður í gnomAD gagnagrunni dreifing mispörunarbreytinga í heilbrigðum einstaklingum sem control hópur.
   5. vika
   Lært verður á greiningarpakkann IsoformSwitchAnalyzeR og hann notaður til að fá upplýsingar hvort ísóformin séu tjáð á sértækum tímum í taugaþroska.
-  Skoðað verður hvort finnist ísóform sem eru bæði tjáð á sértækum tímum OG hafa háa tíðni mispörunarbreytinga.
+  Skoðað verður hvort finnist ísóform sem eru bæði tjáð á sértækum tímum OG hafa svæði með háa tíðni mispörunarbreytinga.
   6. vika
   Github repository verður fínpússuð og unnið í ritgerð.
   7. – 10. vika
