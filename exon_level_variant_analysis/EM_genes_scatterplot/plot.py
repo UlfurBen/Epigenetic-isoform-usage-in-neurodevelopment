@@ -44,24 +44,24 @@ for i, row in df_sorted.iterrows():
             row["gene"],
             (i, row["clinvar_gnomad_ratio"]),
             textcoords="offset points",
-            xytext=(0, 10),
+            xytext=(0, 12),
             ha='center',
-            fontsize=10,
+            fontsize=14,
             rotation=45
         )
 
 # Styling with larger fonts
-plt.xlabel("Exons (sorted by genomic position)", fontsize=14)
-plt.ylabel("ClinVar / gnomAD variant ratio (log scale)", fontsize=14)
-plt.title("ClinVar/gnoMAD Variant Ratios Across EM Gene Exons", fontsize=16)
-plt.xticks(fontsize=12)
-plt.yticks(fontsize=12)
+plt.xlabel("Exons (sorted by genomic position)", fontsize=18)
+plt.ylabel("ClinVar / gnomAD variant ratio (log scale)", fontsize=18)
+plt.title("ClinVar/gnoMAD Variant Ratios Across EM Gene Exons", fontsize=20, pad=30)  # Title moved up with pad
+plt.xticks(fontsize=16)
+plt.yticks(fontsize=16)
 plt.grid(True, which="both", axis='y', linestyle='--', alpha=0.5)
 
 # Add custom legend manually
 plt.scatter([], [], c="black", label="Canonical exons")
 plt.scatter([], [], c="red", label="Non-canonical exons")
-plt.legend(fontsize=12)
+plt.legend(fontsize=16)
 
 plt.tight_layout(pad=3.0)
 
