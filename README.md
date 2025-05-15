@@ -1,4 +1,6 @@
-# Epigenetic-isoform-notkun-í-taugaþroska
+# Isoform-Specific Genetic Analysis of Epigenetic Machinery Genes in Neurodevelopment and Disease
+This BSc project in medical school at University of Iceland aims to determine whether pathogenic missense variants are enriched in coding material unique to non-canonical isoforms and whether these isoforms show stage-specific expression during neurodevelopment.
+
 Bachelor verkefni í læknisfræðinámi við Háskóla Íslands við Heilbrigðisvísindasvið sem miðar að því að finna svæði á ísóform utangenaerfðakerfisins með háa tíðni sjúkdómsvaldandi mispörunarbreytingar og skoða notkun ísóformanna í taugaþroska.
 This repository contains all the code used in the project.
 Mest megnis verður unnið með gögn í UCSC genome browser en allur code verður geymdur í folder **code**.
