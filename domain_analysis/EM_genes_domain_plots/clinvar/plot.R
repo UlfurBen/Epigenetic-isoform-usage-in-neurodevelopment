@@ -2,7 +2,6 @@
 # Lollipop Plot of Missense Variants with Pfam Domains and Canonical Exons
 ###############################################################################
 
-# Load libraries
 library(readr)
 library(dplyr)
 library(stringr)
@@ -10,10 +9,7 @@ library(tidyr)
 library(ggplot2)
 library(biomaRt)
 
-###############################################################################
-# 1) Load and filter ClinVar missense variants for CHD3
-###############################################################################
-
+# 1. Load and filter ClinVar missense variants
 clinvar_raw <- read_tsv("clinvar_result_CHD3.txt", show_col_types = FALSE)
 
 clinvar_for_plot <- clinvar_raw %>%
@@ -30,10 +26,7 @@ clinvar_counts <- clinvar_for_plot %>%
   group_by(PROTEIN_POS) %>%
   summarise(Count = n(), .groups = "drop")
 
-###############################################################################
-# 2) Load Pfam domain annotations for CHD3
-###############################################################################
-
+# 2. Load Pfam domain annotations
 domains_raw <- read_tsv("entry-matching-Q12873.tsv", show_col_types = FALSE)
 
 domain_data <- domains_raw %>%
@@ -47,10 +40,7 @@ domain_data <- domains_raw %>%
   dplyr::select(Name, Type, Start, End) %>%
   arrange(Start)
 
-###############################################################################
-# 3) Get Unique Non-Canonical Exons using biomaRt
-###############################################################################
-
+# 3. Get exon data from Ensembl
 ensembl_mart <- useEnsembl(biomart = "ensembl", dataset = "hsapiens_gene_ensembl", mirror = "useast")
 
 gene_info <- getBM(
@@ -85,7 +75,7 @@ exon_data_full <- getBM(
     End = as.numeric(cds_end) %/% 3
   )
 
-# Identify non-canonical exons unique to a single isoform
+# 4. Filter to get non-canonical exons and highlight specific one
 noncanonical_unique_exons <- exon_data_full %>%
   group_by(ensembl_exon_id) %>%
   summarise(
@@ -102,10 +92,21 @@ noncanonical_unique_exons <- exon_data_full %>%
   mutate(Exon_Label = ensembl_exon_id) %>%
   dplyr::select(Start, End, Exon_Label)
 
-###############################################################################
-# 4) Plot lollipop chart with colored domains, exon labels, and legend
-###############################################################################
+# Add the specific exon even if it was filtered out
+ENSE00003916659_coords <- data.frame(
+  Start = 1088,
+  End = 1319,
+  Exon_Label = "ENSE00003916659"
+)
 
+
+noncanonical_unique_exons <- bind_rows(noncanonical_unique_exons, ENSE00003916659_coords)
+
+# Split highlighted exon from rest
+highlight_exon <- noncanonical_unique_exons %>% filter(Exon_Label == "ENSE00003916659")
+other_exons <- noncanonical_unique_exons %>% filter(Exon_Label != "ENSE00003916659")
+
+# 5. Plot
 domain_height <- max(clinvar_counts$Count, na.rm = TRUE) * 0.2
 label_offset <- domain_height * 0.6
 exon_bar_height <- domain_height * 0.5
@@ -119,59 +120,80 @@ custom_theme <- theme_minimal() +
     legend.position = "bottom"
   )
 
-# Create a named vector of colors for each domain name
 domain_colors <- setNames(rainbow(length(unique(domain_data$Name))), unique(domain_data$Name))
 
 plot_lollipop <- ggplot() +
-  
-  # Canonical exons as low gray bars
+  # Plot highlighted exon FIRST so it's underneath
   geom_rect(
-    data = noncanonical_unique_exons,
-    aes(xmin = Start, xmax = End, ymin = -domain_height - exon_bar_height, ymax = -domain_height),
-    fill = "gray90", color = "black", alpha = 0.8, inherit.aes = FALSE
+    data = highlight_exon,
+    aes(
+      xmin = Start,
+      xmax = End,
+      ymin = -domain_height - exon_bar_height,
+      ymax = -domain_height
+    ),
+    fill = "gold",
+    color = "black",
+    alpha = 1
   ) +
-  
-  # Exon labels
+  # Other exons
+  geom_rect(
+    data = other_exons,
+    aes(
+      xmin = Start,
+      xmax = End,
+      ymin = -domain_height - exon_bar_height,
+      ymax = -domain_height
+    ),
+    fill = "gray90",
+    color = "black",
+    alpha = 1
+  ) +
+  # Labels
   geom_text(
     data = noncanonical_unique_exons,
-    aes(x = (Start + End) / 2, y = -domain_height - exon_bar_height - label_offset * 0.5, label = Exon_Label),
-    size = 2.8, angle = 45, hjust = 1, vjust = 1, inherit.aes = FALSE
+    aes(
+      x = (Start + End) / 2,
+      y = -domain_height - exon_bar_height - label_offset * 0.5,
+      label = Exon_Label
+    ),
+    size = 2.8,
+    angle = 45,
+    hjust = 1,
+    vjust = 1
   ) +
-  
-  # Pfam domains, colored by Name with legend
+  # Pfam domains
   geom_rect(
     data = domain_data,
     aes(xmin = Start, xmax = End, ymin = -domain_height, ymax = 0, fill = Name),
-    color = "black", alpha = 0.5
+    color = "black",
+    alpha = 0.5
   ) +
-  
-  # Lollipop stems
+  # Lollipop stems and heads
   geom_segment(
     data = clinvar_counts,
     aes(x = PROTEIN_POS, xend = PROTEIN_POS, y = 0, yend = Count),
     color = "firebrick"
   ) +
-  
-  # Lollipop heads
   geom_point(
     data = clinvar_counts,
     aes(x = PROTEIN_POS, y = Count),
-    color = "firebrick", size = 3
+    color = "firebrick",
+    size = 3
   ) +
-  
   scale_x_continuous("Amino Acid Position", expand = c(0, 0)) +
   scale_y_continuous(
     "Number of Variants",
     limits = c(-domain_height - exon_bar_height - label_offset * 4.5, max(clinvar_counts$Count) + 1),
     expand = c(0, 0)
   ) +
-  scale_fill_manual(name = "Pfam Domains", values = domain_colors) +
-  ggtitle("Pathogenic Missense Variants in CHD3 (Pfam Domains + Unique Non-Canonical Exons)") +
+  scale_fill_manual(
+    name = "Pfam Domains",
+    values = domain_colors
+  ) +
+  ggtitle("Pathogenic Missense Variants in CHD3 (ENSE00003916659 Highlighted in Gold)") +
   custom_theme
 
-###############################################################################
-# 5) Save output
-###############################################################################
-
-ggsave("lollipop_ClinVar_CHD3_Pfam_and_Exons.png", plot_lollipop, width = 12, height = 5, dpi = 300)
-message("✅ Saved as: lollipop_ClinVar_CHD3_Pfam_and_Exons.png")
+# 6. Save plot
+ggsave("lollipop_ClinVar_CHD3_Pfam_and_Exons_HIGHLIGHT.png", plot_lollipop, width = 12, height = 5, dpi = 300)
+message("✅ Saved: lollipop_ClinVar_CHD3_Pfam_and_Exons_HIGHLIGHT.png")
