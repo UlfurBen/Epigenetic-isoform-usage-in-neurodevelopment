@@ -33,6 +33,7 @@ domain_data <- read_tsv("entry-matching-Q12873.tsv", show_col_types = FALSE) %>%
 
 get_gnomad_variants <- function(gene = "CHD3") {
   base_url <- "https://gnomad.broadinstitute.org/api"
+  
   query <- list(query = paste0('{
     gene(gene_symbol: "', gene, '", reference_genome: GRCh38) {
       variants(dataset: gnomad_r3) {
@@ -43,8 +44,23 @@ get_gnomad_variants <- function(gene = "CHD3") {
     }
   }'))
   
-  res <- POST(base_url, body = query, encode = "json")
-  dat <- fromJSON(rawToChar(res$content))
+  res <- httr::POST(
+    url = base_url,
+    body = query,
+    encode = "json",
+    httr::add_headers("Content-Type" = "application/json")
+  )
+  
+  # Check if response is valid JSON
+  if (httr::http_type(res) != "application/json") {
+    stop("❌ gnomAD API did not return JSON. Response was:\n", httr::content(res, "text"))
+  }
+  
+  dat <- fromJSON(httr::content(res, "text", encoding = "UTF-8"))
+  
+  if (is.null(dat$data$gene$variants)) {
+    stop("⚠️ No variants returned for gene: ", gene)
+  }
   
   df <- dat$data$gene$variants %>%
     as.data.frame() %>%
@@ -56,6 +72,7 @@ get_gnomad_variants <- function(gene = "CHD3") {
   
   return(df)
 }
+
 
 variants_df <- get_gnomad_variants("CHD3")
 variant_counts <- variants_df %>%
@@ -100,7 +117,6 @@ exon_data_full <- getBM(
     End = as.numeric(cds_end) %/% 3
   )
 
-# Identify non-canonical exons unique to a single isoform
 noncanonical_unique_exons <- exon_data_full %>%
   group_by(ensembl_exon_id) %>%
   summarise(
@@ -117,8 +133,16 @@ noncanonical_unique_exons <- exon_data_full %>%
   mutate(Exon_Label = ensembl_exon_id) %>%
   dplyr::select(Start, End, Exon_Label)
 
+# ▶️ Add ENSE00003916659 manually
+highlight_exon <- data.frame(Start = 1088, End = 1319, Exon_Label = "ENSE00003916659")
+
+# ▶️ Split for layered plotting
+noncanonical_exons_other <- noncanonical_unique_exons %>%
+  filter(Exon_Label != "ENSE00003916659")
+noncanonical_exons_all <- bind_rows(noncanonical_exons_other, highlight_exon)
+
 ###############################################################################
-# 4) Plot Lollipop with Domains + Unique Non-Canonical Exons
+# 4) Plot Lollipop with Domains + Highlighted Exon
 ###############################################################################
 
 domain_height <- max(variant_counts$Count, na.rm = TRUE) * 0.2
@@ -134,40 +158,46 @@ custom_theme <- theme_minimal() +
     legend.position = "bottom"
   )
 
-# Unique color per Pfam domain
 domain_colors <- setNames(rainbow(length(unique(domain_data$Name))), unique(domain_data$Name))
 
 plot_gnomad <- ggplot() +
   
-  # Non-canonical unique exons
+  # ▶️ Highlighted exon first (underneath others)
   geom_rect(
-    data = noncanonical_unique_exons,
+    data = highlight_exon,
+    aes(xmin = Start, xmax = End, ymin = -domain_height - exon_bar_height, ymax = -domain_height),
+    fill = "gold", color = "black", alpha = 1
+  ) +
+  
+  # ▶️ Other non-canonical exons
+  geom_rect(
+    data = noncanonical_exons_other,
     aes(xmin = Start, xmax = End, ymin = -domain_height - exon_bar_height, ymax = -domain_height),
     fill = "gray90", color = "black", alpha = 0.8
   ) +
   
-  # Exon labels angled
+  # ▶️ Exon labels
   geom_text(
-    data = noncanonical_unique_exons,
+    data = noncanonical_exons_all,
     aes(x = (Start + End) / 2, y = -domain_height - exon_bar_height - label_offset * 0.5, label = Exon_Label),
     size = 2.8, angle = 45, hjust = 1, vjust = 1
   ) +
   
-  # Pfam domains colored by name
+  # ▶️ Pfam domains
   geom_rect(
     data = domain_data,
     aes(xmin = Start, xmax = End, ymin = -domain_height, ymax = 0, fill = Name),
     color = "black", alpha = 0.5
   ) +
   
-  # Lollipop stems
+  # ▶️ Lollipop stems
   geom_segment(
     data = variant_counts,
     aes(x = PROTEIN_POS, xend = PROTEIN_POS, y = 0, yend = Count),
     color = "firebrick"
   ) +
   
-  # Lollipop heads
+  # ▶️ Lollipop heads
   geom_point(
     data = variant_counts,
     aes(x = PROTEIN_POS, y = Count),
@@ -181,12 +211,12 @@ plot_gnomad <- ggplot() +
     expand = c(0, 0)
   ) +
   scale_fill_manual(name = "Pfam Domains", values = domain_colors) +
-  ggtitle("gnomAD Missense Variants in CHD3 (Pfam Domains + Unique Non-Canonical Exons)") +
+  ggtitle("gnomAD Missense Variants in CHD3 (Pfam Domains + Highlighted Unique Exon)") +
   custom_theme
 
 ###############################################################################
 # 5) Save Output
 ###############################################################################
 
-ggsave("lollipop_gnomAD_CHD3_noncanonical_exons.png", plot_gnomad, width = 12, height = 5, dpi = 300)
-message("✅ Saved as: lollipop_gnomAD_CHD3_noncanonical_exons.png")
+ggsave("lollipop_gnomAD_CHD3_noncanonical_exons_HIGHLIGHT.png", plot_gnomad, width = 12, height = 5, dpi = 300)
+message("✅ Saved as: lollipop_gnomAD_CHD3_noncanonical_exons_HIGHLIGHT.png")
